@@ -1,0 +1,101 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Home{% endblock title %}
+
+{% block main-content %}
+<!-- 1st Product Slider -->
+
+
+<hr>
+<h2  style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Man's clothes</h2> 
+<hr>
+<div class="owl-carousel" id="slider4">
+  {% for b in mansclothes %}
+  <div class="item text-center" style="padding: 15px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <a href="{% url 'product-detail' b.id %}" class="btn btn-link text-decoration-none">
+      <img src="{{ b.product_image.url }}" alt="{{ b.title }}" class="img-fluid" style="height: 200px; width: auto; margin-bottom: 10px;">
+      <div class="mt-2">
+        <span class="fw-bold d-block">{{ b.title }}</span>
+        <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
+      </div>
+    </a>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
+      <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(236, 133, 133);">More Details</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<hr>
+
+
+<br>
+<h2 style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;"> Woman's clothes</h2> 
+<hr>
+<div class="owl-carousel" id="slider4">
+  {% for b in womansclothes %}
+  <div class="item text-center" style="padding: 15px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <a href="{% url 'product-detail' b.id %}" class="btn btn-link text-decoration-none">
+      <img src="{{ b.product_image.url }}" alt="{{ b.title }}" class="img-fluid" style="height: 200px; width: auto; margin-bottom: 10px;">
+      <div class="mt-2">
+        <span class="fw-bold d-block">{{ b.title }}</span>
+        <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
+      </div>
+    </a>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
+      <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(236, 133, 133);">More Details</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<hr>
+<br>
+<h2 style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Shoes</h2> 
+
+<hr>
+
+<div class="owl-carousel" id="slider4">
+  {% for b in  shoes %}
+  <div class="item text-center" style="padding: 15px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <a href="{% url 'product-detail' b.id %}" class="btn btn-link text-decoration-none">
+      <img src="{{ b.product_image.url }}" alt="{{ b.title }}" class="img-fluid" style="height: 200px; width: auto; margin-bottom: 10px;">
+      <div class="mt-2">es
+        <span class="fw-bold d-block">{{ b.title }}</span>
+        <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
+      </div>
+    </a>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
+      <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(236, 133, 133);">More Details</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<hr>
+<br>
+<h2 style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;"> Cosmetic Product</h2> 
+
+<hr>
+  <div class="owl-carousel" id="slider4">
+    {% for b in cosmeticproduct %}
+    <div class="item text-center" style="padding: 15px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <a href="{% url 'product-detail' b.id %}" class="btn btn-link text-decoration-none">
+        <img src="{{ b.product_image.url }}" alt="{{ b.title }}" class="img-fluid" style="height: 200px; width: auto; margin-bottom: 10px;">
+        <div class="mt-2">
+          <span class="fw-bold d-block">{{ b.title }}</span>
+          <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
+        </div>
+      </a>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
+        <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(236, 133, 133);">More Details</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+<hr>
+<br>
+<!-- End 4th Product Slider -->
+<!-- End Payment Info Section -->
+{% endblock main-content %}
