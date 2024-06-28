@@ -124,3 +124,5 @@ SESSION_ENGINE ='django.contrib.sessions.backends.db'
 # EMAIL_PORT = 587
 # EMAIL_HOST_USER = "yourowngmail@gmail.com"
 # EMAIL_HOST_PASSWORD = "yourowngmailpassword"
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField' 

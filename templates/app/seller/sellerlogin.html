@@ -1,0 +1,51 @@
+{% extends 'app/seller/newbase.html' %}
+{% load static %}
+{% block title %}Seller Login{% endblock title %}
+
+{% block main-content %}
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <div class="container">
+        <h2 class="mt-5">Seller Login</h2>
+        <form method="POST" action="{% url 'sellerlogin' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div> -->
+    <div class="container">
+        <div class="row my-3">
+         <div class="col-sm-6 offset-sm-3">
+            <h2 class="mt-5">Seller Login</h2>
+            <form method="POST" action="{% url 'sellerlogin' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    {{ form.password }}
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <small><a href="{% url 'password_reset' %}">Forgot Password ?</a></small><br>
+              <br>
+            <div class="text-center text-primary fw-bold"><small>New to WeShop ? <a href="{% url 'sellerregistration' %}"
+               class="text-danger">Create an Account </a> </small></div>
+            {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+              <p class="alert alert-danger my-3">{{error}}</p>
+            {% endfor %}
+            {% endif %}
+          </form>
+         </div>
+        </div>
+       </div>
+{% endblock main-content %}

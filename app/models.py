@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator,MinValueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from app.validators import validate_mobile_number
+from django.contrib.auth.hashers import make_password, check_password
 
 # Create your models here.
 STATE_CHOICE = (
@@ -109,16 +110,29 @@ class Customer(models.Model):
     
 
 class Seller(models.Model):
-    firstname = models.CharField(max_length=20,null=False,blank=False)
-    lastname= models.CharField(max_length=20,null=False,blank=False)
-    username = models.CharField(max_length=20,null=False,blank=False)
-    email = models.EmailField(max_length=50,null=False,blank=False)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True, blank=True)
     phone = models.CharField(max_length=10,null=False,blank=False,validators=[validate_mobile_number])
     address = models.CharField(max_length=100,null=False,blank=False)
     image = models.ImageField(upload_to='seller/', null=False, blank=False)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
     def __str__(self):
        return str(self.id) 
     
+
+class Admin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="admins/", null=False, blank=False)
+    mobile = models.CharField(max_length=20,null=False,blank=False,validators=[validate_mobile_number])
+
+    def __str__(self):
+        return self.user.username
+
+
 CATEGORY_CHOICES =   (
     ('M','mans clothes'),
     ('W','womans clothes'),
@@ -127,6 +141,7 @@ CATEGORY_CHOICES =   (
 )
 
 class Product(models.Model):
+    seller = models.ForeignKey(User,on_delete=models.CASCADE)
     title =models.CharField(max_length=100)
     selling_price =models.PositiveIntegerField()
     discounted_price = models.PositiveIntegerField()

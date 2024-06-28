@@ -3,7 +3,9 @@ from django.contrib.auth.forms import UserCreationForm , AuthenticationForm ,Use
 from django.contrib.auth.models import User
 from django.utils.translation import gettext ,gettext_lazy as _
 from django.contrib.auth import password_validation
-from .models import Customer
+from pydantic import ValidationError, validate_email
+from .models import Customer, Product,Seller
+
 
 
 class CustomerRegistrationForm(UserCreationForm):
@@ -28,9 +30,42 @@ class CustomerRegistrationForm(UserCreationForm):
             self.save_m2m()
         return user
 
+# class SellerRegistrationForm(forms.ModelForm):
+#     password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+#     password2 = forms.CharField(label='Confirm Password (again)', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+#     class Meta:
+#         model = Seller
+#         fields = ['firstname', 'lastname', 'username', 'email', 'phone', 'address', 'image']
+#         widgets = {
+#             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+#             'phone': forms.NumberInput(attrs={'class': 'form-control'}),
+#             'address': forms.TextInput(attrs={'class': 'form-control'}),
+#             'image': forms.FileInput(attrs={'class': 'form-control'}),
+#         }
+
+#     def clean_password2(self):
+#         password1 = self.cleaned_data.get('password1')
+#         password2 = self.cleaned_data.get('password2')
+#         if password1 and password2 and password1 != password2:
+#             raise forms.ValidationError("Passwords don't match")
+#         return password2
+
+#     def save(self, commit=True):
+#         seller = super().save(commit=False)
+#         seller.set_password(self.cleaned_data['password1'])
+#         if commit:
+#             seller.save()
+#         return seller
+
 class LoginForm(AuthenticationForm):
     username = UsernameField(widget=forms.TextInput(attrs={'autofocus':True ,'class':'form-control'}))   
     password = forms.CharField(label=_("Password"), strip=False, widget=forms.PasswordInput(attrs={'autocomplete':'current-password' ,'class':'form-control'}))
+
+
+# class SellerLoginForm(forms.Form):
+#     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
+#     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
 
 class MyPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(label=('Old Password'), strip=False ,widget=forms.PasswordInput(attrs={'autocomplete':'current-password','autofocus':True, 'class':'form-control'}))
@@ -54,3 +89,17 @@ class CustomerProfileForm(forms.ModelForm):
                  ,'city':forms.TextInput(attrs={'class':'form-control'}),'state':forms.Select(attrs={'class':'form-control'})}
 
 
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['title', 'selling_price', 'discounted_price', 'description', 'brand', 'category', 'product_image', 'quantity']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'selling_price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'discounted_price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'brand': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'product_image': forms.FileInput(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+        }

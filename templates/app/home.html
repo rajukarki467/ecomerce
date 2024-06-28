@@ -163,11 +163,11 @@ document.addEventListener('DOMContentLoaded', function () {
 <div class="container">
   <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Products</h2>
   
-  {% if product %}
+  {% if product_list %}
 
   <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 2rem;">
 
-      {% for product in product %}
+      {% for product in product_list %}
       <div class="col-md-4" style="width: 100%;">
           <div class="card" style="border: 1px solid #ededed;">
               <div class="card-body text-center">
@@ -195,12 +195,45 @@ document.addEventListener('DOMContentLoaded', function () {
   {% else %}
   <h2>No products available.</h2>
   {% endif %}
+</div>
+<div class="container">
+  <nav aria-label="...">
+    <ul class="pagination">
+        {% if product_list.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ product_list.previous_page_number }}">Previous</a>
+          </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for i in product_list.paginator.page_range %}
+        {% if i == product_list.number %}
+        <li class="page-item active"><a class="page-link">{{i}}</a></li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+        {% endif %}
+        {% endfor %}
+
+        {% if product_list.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ product_list.next_page_number }}">Next</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+  </nav>
 
 </div>
 
 <!-- Payment Info Section -->
 <hr><hr>
-<h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Payment We Accept</h2>
+<!-- <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Payment We Accept</h2>
 <hr>
 <div class="container my-5">
   <div class="row">
@@ -219,17 +252,13 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
     </div>
   </div>
-</div>
+</div> -->
 <style>
 .product-img {
     height: 200px;
     object-fit: cover;
 }
-.payment-img {
-    height: 80px;
-    width: 70%;
-    object-fit: contain;
-}
+
 </style>
 <script>
 $(document).ready(function(){

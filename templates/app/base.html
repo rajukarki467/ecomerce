@@ -125,13 +125,10 @@
               </ul>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">About Us</a>
+              <a class="nav-link" href="{% url 'about' %}">About Us</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Contact Us</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Vendor</a>
+              <a class="nav-link" href="{% url 'contactus' %}">Contact Us</a>
             </li>
           </ul>
           <form class="d-flex ml-auto" action="{% url 'search' %}" method="GET">
@@ -161,14 +158,16 @@
                 <a href="{% url 'showcart' %}" class="nav-link"><span class="badge bg-danger" id="totalitem">{{ totalitem }}</span> Cart</a>
               </li>
               {% else %}
-              <li class="nav-item dropdown mx-2">
-                <a class="nav-link dropdown-toggle" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'joinnow' %}">Become a seller</a>
+              </li>
+              
+              <li class="nav-item ">
+                <a class="nav-link " href="{% url 'login_view' %}" >
                   Login
                 </a>
-                <ul class="dropdown-menu" aria-labelledby="loginDropdown">
-                  <li><a class="dropdown-item" href="{% url 'login' %}">Login as Customer</a></li>
-                  <li><a class="dropdown-item" href="{% url 'login' %}">Login as Admin</a></li>
-                </ul>
+              
               </li>
               <li class="nav-item mx-2">
                 <a href="{% url 'customerregistration' %}" class="nav-link">Registration</a>

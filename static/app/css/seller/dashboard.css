@@ -1,0 +1,70 @@
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .logo img {
+            max-width: 100%;
+            height: auto;
+        }
+        .navigation, .navi {
+            background-color: #212529;
+            color: #ffffff;
+            width: 180px;
+            padding-left: 0%;
+        }
+        .navi ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .navi ul li {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .navi ul li.active {
+            background-color: #a95e1c;
+        }
+        .navi ul li a {
+            text-decoration: none;
+            color: #ffffff;
+            display: block;
+        }
+        .navi ul li a:hover {
+            background-color: #c36032;
+        }
+        .header-rightside {
+            display: flex;
+            align-items: center;
+        }
+        .header-rightside img.profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .header-rightside .add-project {
+            margin-right: 10px;
+        }
+        .container-fluid {
+            display: flex;
+            flex-direction: row;
+            padding-left: 0%;
+        }
+        .display-table-row {
+            display: flex;
+            width: 100%;
+        }
+        .col-md-10.col-sm-11 {
+            flex: 1;
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .navigation, .navi {
+                width: 100%;
+            }
+            .col-md-10.col-sm-11 {
+                padding: 10px;
+            }
+        }

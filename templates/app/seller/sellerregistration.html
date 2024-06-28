@@ -1,0 +1,80 @@
+{% extends 'app/seller/newbase.html' %}
+{% load static %}
+{% block title %}Seller Registration{% endblock title %}
+
+{% block main-content %}
+    <!-- <div class="container">
+        <h2 class="mt-5">Seller Registration</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_firstname">First Name</label>
+                {{ form.firstname }}
+            </div>
+            <div class="form-group">
+                <label for="id_lastname">Last Name</label>
+                {{ form.lastname }}
+            </div>
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_phone">Phone</label>
+                {{ form.phone }}
+            </div>
+            <div class="form-group">
+                <label for="id_address">Address</label>
+                {{ form.address }}
+            </div>
+            <div class="form-group">
+                <label for="id_image">Profile Image</label>
+                {{ form.image }}
+            </div>
+            <div class="form-group">
+                <label for="id_password1">Password</label>
+                {{ form.password1 }}
+            </div>
+            <div class="form-group">
+                <label for="id_password2">Confirm Password</label>
+                {{ form.password2 }}
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div> -->
+    <div class="container">
+        <div class="row my-3">
+         <div class="col-sm-6 offset-sm-3">
+          <h3>Seller Registration</h3>
+          <hr>
+       
+          <form action="" method="post"  enctype="multipart/form-data" novalidate class="shadow p-5">
+             {% if messages %} 
+             {% for message in messages %} 
+             <p {% if message.tags %} class="alert alert-{{message.tags}} mb-5" {% endif %}>{{message }}</p>
+             {% endfor %}
+             {% endif %}
+           {% csrf_token %}
+           {% for fm in form %}
+           <div class=" form-group mb-3">
+            {{fm.label_tag}} {{fm}} <small class="text-danger">{{ fm.errors | striptags }}</small>
+           </div>
+           {% endfor %}
+           <input type="submit" value="Submit" class="btn btn-primary">
+           <br>
+           <div class="text-center text-primary fw-bold"><small>Existing seller ? <a href="{% url 'sellerlogin' %}"
+              class="text-danger">Login Now</a> </small></div>
+           {% if form.non_field_errors %}
+           {% for error in form.non_field_errors %}
+           <p class="alert alert-danger my-3">{{error}}</p>
+           {% endfor %}
+           {% endif %}
+          </form>
+         </div>
+        </div>
+       </div>
+{% endblock main-content %}

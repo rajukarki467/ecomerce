@@ -1,0 +1,40 @@
+{% extends 'app/seller/newbase.html' %}
+{% load static %}
+{% block title %}Selle Home{% endblock title %}
+{% block main-content %}
+
+<div class="container">
+    <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Added Product</h2>
+    
+    {% if products %}
+  
+    <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 2rem;">
+  
+        {% for product in products %}
+        <div class="col-md-4" style="width: 100%;">
+            <div class="card" style="border: 1px solid #ededed;">
+                <div class="card-body text-center">
+                    <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
+                        <div class="item">
+                            <h5 class="fw-bold text-uppercase">{{ product.name }}</h5>
+                            <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}" height="150px" width="150px">
+                            <div class="mt-3">
+                                <span class="fw-bold">{{product.title }}</span><br><span class="fs-5">Rs. {{ product.discounted_price }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+  
+  
+    </div>
+    
+    {% else %}
+    <h2> products is not added at.</h2>
+    {% endif %}
+  
+  </div>
+  <hr>
+{% endblock main-content %}

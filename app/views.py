@@ -1,5 +1,6 @@
 from datetime import time
 import uuid
+from django.core.paginator import Paginator
 from uuid import uuid4
 from venv import logger
 from django.shortcuts import get_object_or_404, render ,redirect,reverse
@@ -19,8 +20,26 @@ from .models import *
 from .forms import *
 import xml.etree.ElementTree as ET
 import logging
-from .mongo_connect import my_client
+from django.contrib.auth import authenticate, login
 
+def login_view(request):
+   if request.method == 'POST':
+      username = request.POST['username']
+      password = request.POST['password']
+
+      user = authenticate(request, username=username, password=password)
+      if user is not None: 
+        login(request, user)
+        seller = Seller.objects.get(user=user)
+        if seller:
+            return redirect('sellerhome')
+        return redirect('home')
+   
+   form = LoginForm()
+   return render(request, 'app/login.html', {'form':form})
+   
+
+# recommendation views
 def user_based_collaborative_filtering(user, num_recommendations=8):
     # Get all users except the target user
     other_users = User.objects.exclude(id=user.id)
@@ -100,28 +119,18 @@ class ProductView(View):
   totalitems = 0
   recommended_products = []
   latestproduct = LatestProduct.get_latest_products()[:4]
-  
-    # print("Recommended Products:", recommended_products)  # Check if recommendations are generated
-  product = Product.objects.all()
+
+  product = Product.objects.all().order_by("-id")
+  paginator = Paginator(product, 8)
+  page_number = self.request.GET.get('page')
+  print(page_number)
+  product_list = paginator.get_page(page_number)
   if request.user.is_authenticated:
    recommended_products = user_based_collaborative_filtering(request.user)
    for i in Cart.objects.filter(user=request.user):
     totalitems+=i.quantity
-  return render(request ,'app/home.html',{'latestproduct': latestproduct,'product':product, 'totalitem':totalitems,'recommended_products': recommended_products})
+  return render(request ,'app/home.html',{'latestproduct': latestproduct,'product_list':product_list,'totalitem':totalitems,'recommended_products': recommended_products})
 
-class category(View):
- def get(self,request):
-    mansclothes = Product.objects.filter(category ='M')
-    womansclothes = Product.objects.filter(category ='W')
-    shoes = Product.objects.filter(category ='S')
-    cosmeticproduct = Product.objects.filter(category ='C')
-    totalitems = 0
-    if request.user.is_authenticated:
-     for i in Cart.objects.filter(user=request.user):
-        totalitems+=i.quantity
-    return render(request ,'app/category.html',{'mansclothes':mansclothes, 
-                'womansclothes':womansclothes, 'shoes':shoes , 'cosmeticproduct':cosmeticproduct , 'totalitem':totalitems})
- 
 class ProductDetailView(View):
     def get(self, request, pk):
         try:
@@ -129,7 +138,7 @@ class ProductDetailView(View):
             totalitems = 0
             rating_exists = False
             product = Product.objects.get(id=pk)
-            related_product = Product.objects.exclude(id=product.pk).filter(category=product.category)
+            related_product = Product.objects.exclude(id=product.pk).filter(category=product.category)[:8]
             
             ratings = Rating.objects.filter(product=product)
             total_ratings = len(ratings)
@@ -193,6 +202,7 @@ class ProductDetailView(View):
             messages.error(request, 'You need to be logged in to submit a rating and review.')
 
         return redirect('/product-detail/'+str(pk), pk=pk)
+# cart views
 
 @login_required
 def add_to_cart(request):
@@ -319,22 +329,21 @@ def buy_now(request):
 
 
 
-@login_required
-def address(request):
- add = Customer.objects.filter(user=request.user)
- totalitems=0
- for i in Cart.objects.filter(user=request.user):
-  totalitems+=i.quantity
- return render(request, 'app/address.html',{'add':add,'totalitem':totalitems})
+# category views
 
-@login_required
-def orders(request):
- op = OrderPlaced.objects.filter(user=request.user)
- totalitems=0
- for i in Cart.objects.filter(user=request.user):
-  totalitems+=i.quantity
- return render(request, 'app/orders.html',{'orderplaced':op,'totalitem':totalitems})
-
+class category(View):
+ def get(self,request):
+    mansclothes = Product.objects.filter(category ='M')
+    womansclothes = Product.objects.filter(category ='W')
+    shoes = Product.objects.filter(category ='S')
+    cosmeticproduct = Product.objects.filter(category ='C')
+    totalitems = 0
+    if request.user.is_authenticated:
+     for i in Cart.objects.filter(user=request.user):
+        totalitems+=i.quantity
+    return render(request ,'app/category.html',{'mansclothes':mansclothes, 
+                'womansclothes':womansclothes, 'shoes':shoes , 'cosmeticproduct':cosmeticproduct , 'totalitem':totalitems})
+ 
 
 def shoes(request , data = None):
  if data == None:
@@ -403,23 +412,6 @@ def womancloth(request , data = None):
  
  return render(request, 'app/womancloth.html',{'womancloth':womancloth,'totalitem':totalitems})
 
-
-class CustomerRegistrationView(View):
-  def get(self, request):
-        form = CustomerRegistrationForm()
-        return render(request, 'app/customerregistration.html', {'form': form})
-  
-  def post(self, request):
-    form = CustomerRegistrationForm(request.POST, request.FILES)
-    if form.is_valid():
-        user = form.save(commit=False)
-        user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
-        user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
-        user.save()
-        messages.success(request, 'Congratulations!! Successfully Registered')
-        return redirect('/accounts/login/')  # Redirect to a success page or some other view
-    return render(request, 'app/customerregistration.html', {'form': form})
-
 @login_required
 def checkout(request):
  user = request.user 
@@ -439,25 +431,6 @@ def checkout(request):
  
  return render(request, 'app/checkout.html',{'add':add,'totalamount':totalamount,'cartitems': cart_items,'totalitem':totalitems})
 
-@login_required
-def payment_done(request):
-  user = request.user
-  # custid = request.GET.get('custid')
-  customer = Customer.objects.get(user=user.pk)
-  payment = request.GET.get('payment')
-  cart = Cart.objects.filter(user=user)
-#   uid = uuid4()
-  for c in cart:
-    OrderPlaced(user=user,  product=c.product, quantity=c.quantity,total=c.total_cost).save()
-    if payment == 'e-sewa':
-        # return render(request, "app/esewarequest.html",{'total':c.total_cost,'uid':uid} )  
-       return redirect('/esewa-request')
-      
-    if payment == 'khalti':
-        return render(request, "app/khaltirequest.html",{'total':c.total_cost} ) 
-    #    return redirect('/khalti-request')
-    c.delete()
-  return redirect("orders") 
 
 @method_decorator(login_required,name='dispatch')
 class ProfileView(View):
@@ -488,10 +461,47 @@ class ProfileView(View):
   return render(request,'app/profile.html',{'form':form,'active':'btn-primary','totalitem':totalitems}) 
 
 
+@login_required
+def address(request):
+ add = Customer.objects.filter(user=request.user)
+ totalitems=0
+ for i in Cart.objects.filter(user=request.user):
+  totalitems+=i.quantity
+ return render(request, 'app/address.html',{'add':add,'totalitem':totalitems})
+
+@login_required
+def orders(request):
+ op = OrderPlaced.objects.filter(user=request.user)
+ totalitems=0
+ for i in Cart.objects.filter(user=request.user):
+  totalitems+=i.quantity
+ return render(request, 'app/orders.html',{'orderplaced':op,'totalitem':totalitems})
+
 
 
 
 # payment system
+
+@login_required
+def payment_done(request):
+  user = request.user
+  # custid = request.GET.get('custid')
+  customer = Customer.objects.get(user=user.pk)
+  payment = request.GET.get('payment')
+  cart = Cart.objects.filter(user=user)
+#   uid = uuid4()
+  for c in cart:
+    OrderPlaced(user=user,  product=c.product, quantity=c.quantity,total=c.total_cost).save()
+    if payment == 'e-sewa':
+        # return render(request, "app/esewarequest.html",{'total':c.total_cost,'uid':uid} )  
+       return redirect('/esewa-request')
+      
+    elif payment == 'khalti':
+        return render(request, "app/khaltirequest.html",{'total':c.total_cost} ) 
+    #    return redirect('/khalti-request')
+    c.delete()
+  return redirect("orders") 
+
 @method_decorator(login_required,name='dispatch')
 class KhaltiRequestView(View):
     def get(self, request, *args, **kwargs):
@@ -541,7 +551,6 @@ class KhaltiVerifyView(View):
         }
         return JsonResponse(data)
 
-
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -559,7 +568,6 @@ class EsewaRequestView(View):
 
         total=shipping_cost+total 
         return render(request, 'app/esewarequest.html', {'uid': uid, 'total': total})
-
 
 @method_decorator(login_required, name='dispatch')
 class EsewaVerifyView(View):
@@ -606,3 +614,198 @@ class EsewaVerifyView(View):
             return redirect("/")
         else:
             return redirect(f"/esewa-request/?o_id={order_id}")
+
+
+# customer registration
+class CustomerRegistrationView(View):
+  def get(self, request):
+        form = CustomerRegistrationForm()
+        return render(request, 'app/customerregistration.html', {'form': form})
+  
+  def post(self, request):
+    form = CustomerRegistrationForm(request.POST, request.FILES)
+    if form.is_valid():
+        user = form.save(commit=False)
+        user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
+        user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
+        user.save()
+        messages.success(request, 'Congratulations!! Successfully Registered')
+        return redirect('/accounts/login/')  # Redirect to a success page or some other view
+    return render(request, 'app/customerregistration.html', {'form': form})
+
+# seller dashbord
+
+# class SellerRegistrationView(View):
+#   def get(self, request):
+#         form = SellerRegistrationForm()
+#         return render(request, 'app/seller/sellerregistration.html', {'form': form})
+  
+#   def post(self, request):
+#     form = SellerRegistrationForm(request.POST, request.FILES)
+#     if form.is_valid():
+#         user = form.save(commit=False)
+#         user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
+#         user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
+#         user.save()
+#         messages.success(request, 'Congratulations!! Successfully Registered')
+#         return redirect('/login')  # Redirect to a success page or some other view
+#     return render(request, 'app/seller/sellerregistration.html', {'form': form})
+
+
+# class SellerLoginView(View):
+#     def get(self, request):
+#         form = LoginForm()
+#         return render(request, 'app/login.html', {'form': form})
+
+#     def post(self, request):
+#         form = SellerLoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+            
+#             try:
+#                 seller = Seller.objects.get(email=email)
+#                 if seller.check_password(password):
+#                     # Simulating login by adding seller's id to session (replace with actual login logic)
+#                     request.session['seller_id'] = seller.id
+#                     messages.success(request, 'Successfully logged in')
+#                     return redirect('sellerdashboard')
+#                 else:
+#                     form.add_error(None, 'Invalid email or password')
+#             except Seller.DoesNotExist:
+#                 form.add_error(None, 'Invalid email or password')
+#         return render(request,'app/seller/sellerlogin.html', {'form': form})
+
+
+def seller_dashboard( request):
+    seller = Seller.objects.get(user=request.user)
+    product = Product.objects.filter(seller=request.user)
+    context = {
+        'seller':seller,
+        'product':product
+    }
+    return render(request, 'app/seller/seller_dashboard.html',context)
+
+@login_required
+def sellerprofile(request):
+    seller = Seller.objects.get(user=request.user)
+    context =  {'seller':seller, 'user':request.user}
+    return render(request, 'app/seller/sellerprofile.html',context=context)
+
+
+def sellerhome(request):
+    seller = Seller.objects.get(user=request.user)
+    products = Product.objects.filter(seller=request.user)
+    context = {
+        'products':products,
+        'user':request.user
+    }
+    return render(request, 'app/seller/sellerhome.html', context)
+
+
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            seller_id = request.session.get('seller_id')
+            product = form.save(commit=False)
+            product.seller = Seller.objects.get(id=seller_id)  # Assuming seller is logged in user
+            product.save()
+            messages.success(request, 'Product added successfully!')
+            return redirect('seller_dashboard')  # Redirect to a seller dashboard or another page
+    else:
+        form = ProductForm()
+    
+    return render(request, 'app/seller/add_product.html', {'form': form})
+
+def joinnow(request):
+   return render(request,'app/seller/link.html')
+
+def aboutus(request):
+   return render(request,'app/about.html')
+
+def contactus(request):
+   return render(request,'app/contactus.html')
+
+
+# admin views
+
+# class AdminLoginView(FormView):
+#     template_name = "adminpages/adminlogin.html"
+#     form_class = CustomerLoginForm
+#     success_url = reverse_lazy("ecomapp:adminhome")
+
+#     def form_valid(self, form):
+#         uname = form.cleaned_data.get("username")
+#         pword = form.cleaned_data["password"]
+#         usr = authenticate(username=uname, password=pword)
+#         if usr is not None and Admin.objects.filter(user=usr).exists():
+#             login(self.request, usr)
+#         else:
+#             return render(self.request, self.template_name, {"form": self.form_class, "error": "Invalid credentials"})
+#         return super().form_valid(form)
+
+
+# class AdminRequiredMixin(object):
+#     def dispatch(self, request, *args, **kwargs):
+#         if request.user.is_authenticated and Admin.objects.filter(user=request.user).exists():
+#             pass
+#         else:
+#             return redirect("/admin-login/")
+#         return super().dispatch(request, *args, **kwargs)
+
+
+# class AdminHomeView(AdminRequiredMixin, TemplateView):
+#     template_name = "adminpages/adminhome.html"
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["pendingorders"] = Order.objects.filter(
+#             order_status="Order Received").order_by("-id")
+#         return context
+
+
+# class AdminOrderDetailView(AdminRequiredMixin, DetailView):
+#     template_name = "adminpages/adminorderdetail.html"
+#     model = Order
+#     context_object_name = "ord_obj"
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["allstatus"] = ORDER_STATUS
+#         return context
+
+
+# class AdminOrderListView(AdminRequiredMixin, ListView):
+#     template_name = "adminpages/adminorderlist.html"
+#     queryset = Order.objects.all().order_by("-id")
+#     context_object_name = "allorders"
+
+
+# class AdminOrderStatuChangeView(AdminRequiredMixin, View):
+#     def post(self, request, *args, **kwargs):
+#         order_id = self.kwargs["pk"]
+#         order_obj = Order.objects.get(id=order_id)
+#         new_status = request.POST.get("status")
+#         order_obj.order_status = new_status
+#         order_obj.save()
+#         return redirect(reverse_lazy("ecomapp:adminorderdetail", kwargs={"pk": order_id}))
+
+
+# class AdminProductListView(AdminRequiredMixin, ListView):
+#     template_name = "adminpages/adminproductlist.html"
+#     queryset = Product.objects.all().order_by("-id")
+#     context_object_name = "allproducts"
+
+
+# class AdminProductCreateView(AdminRequiredMixin, CreateView):
+#     template_name = "adminpages/adminproductcreate.html"
+#     form_class = ProductForm
+#     success_url = reverse_lazy("ecomapp:adminproductlist")
+
+#     def form_valid(self, form):
+#         p = form.save()
+#         images = self.request.FILES.getlist("more_images")
+#         for i in images:
+#             ProductImage.objects.create(product=p, image=i)
+#         return super().form_valid(form)

@@ -1,0 +1,47 @@
+{% extends 'app/seller/newbase.html' %}
+{% load static %}
+{% block title %}Seller Dashboard{% endblock title %}
+{% block main-content %}
+<link rel="stylesheet" href="../../static/app/css/seller.css">
+<div class="products-container">
+    <div class="container mt-4">
+        <h2>Manage Your Products</h2>
+        <div class="card mt-4">
+            <div class="card-body">
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Selling Price</th>
+                            <th>Discounted Price</th>
+                            <th>Description</th>
+                            <th>Brand</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in product %}
+                        <tr>
+                            <td>{{ product.title }}</td>
+                            <td>{{ product.selling_price }}</td>
+                            <td>{{ product.discounted_price }}</td>
+                            <td>{{ product.description }}</td>
+                            <td>{{ product.brand }}</td>
+                            <td>{{ product.category }}</td>
+                            <td>{{ product.quantity }}</td>
+                            <td>{{ product.created_at }}</td>
+                            <td>
+                                <!-- Add action buttons here if needed -->
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main-content %}

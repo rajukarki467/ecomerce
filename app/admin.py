@@ -6,7 +6,8 @@ from .models import (
     Cart,
     OrderPlaced,
     Rating,
-    Seller
+    Seller,
+    Admin
 )
 
 # Register your models here.
@@ -14,6 +15,12 @@ from .models import (
 @admin.register(Customer)
 class CustomerModelAdmin(admin.ModelAdmin):
     list_display = ['id','user','name','locality','city','state']
+
+
+@admin.register(Admin)
+class CustomerModelAdmin(admin.ModelAdmin):
+    list_display = ['id','user', 'image','mobile' ]
+
 
 @admin.register(Product)
 class ProductModelAdmin(admin.ModelAdmin):
@@ -41,8 +48,8 @@ admin.site.register(OrderPlaced, OrderPlacedAdmin)
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'firstname', 'lastname', 'username', 'email', 'phone', 'address')
-    search_fields = ('firstname', 'lastname', 'username', 'email', 'phone')
+    list_display = ('user','phone', 'address')
+    # search_fields = ('firstname', 'lastname', 'username', 'email', 'phone')
 
 
 @admin.register(Rating)
