@@ -36,9 +36,8 @@ class CustomerRegistrationForm(UserCreationForm):
 
 #     class Meta:
 #         model = Seller
-#         fields = ['firstname', 'lastname', 'username', 'email', 'phone', 'address', 'image']
+#         fields = [ 'username','phone', 'address', 'image']
 #         widgets = {
-#             'email': forms.EmailInput(attrs={'class': 'form-control'}),
 #             'phone': forms.NumberInput(attrs={'class': 'form-control'}),
 #             'address': forms.TextInput(attrs={'class': 'form-control'}),
 #             'image': forms.FileInput(attrs={'class': 'form-control'}),
@@ -51,12 +50,29 @@ class CustomerRegistrationForm(UserCreationForm):
 #             raise forms.ValidationError("Passwords don't match")
 #         return password2
 
+# class SellerRegistrationForm(UserCreationForm):
+#     username= forms.TextInput(attrs={'class': 'form-control'})
+#     password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+#     password2 = forms.CharField(label='Confirm Password (again)', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+#     email = forms.CharField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+#     phone = forms.CharField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+#     image = forms.ImageField( widget=forms.FileInput(attrs={'class': 'form-control'}))
+
+#     class Meta:
+#         model = User
+#         fields = ['username',  'password1', 'password2']
+#         labels = {'email': 'Email'}
+#         widgets = {'username': forms.TextInput(attrs={'class': 'form-control'})}
+
 #     def save(self, commit=True):
 #         seller = super().save(commit=False)
-#         seller.set_password(self.cleaned_data['password1'])
+#         seller.email = self.cleaned_data['email']
+#         seller.phone = self.cleaned_data['phone']  # Custom field, may need extra handling
 #         if commit:
 #             seller.save()
+#             self.save_m2m()
 #         return seller
+    
 
 class LoginForm(AuthenticationForm):
     username = UsernameField(widget=forms.TextInput(attrs={'autofocus':True ,'class':'form-control'}))   

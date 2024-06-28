@@ -62,13 +62,13 @@ urlpatterns = [
 
  # seller urls
   # path('accounts/seller/login/',views.SellerLoginView.as_view(),name='sellerlogin'),
-  path('sellerdashboard/', views.seller_dashboard, name='sellerdashboard'),
   # path('seller/dashboard/', views.sellerdashboard, name='seller_dashboard'),
   # path('seller/registration/', views.SellerRegistrationView.as_view(), name='sellerregistration'),
+  path('sellerdashboard/', views.seller_dashboard, name='sellerdashboard'),
   path('add-product/', views.add_product, name='add_product'),
   path('sellerhome/', views.sellerhome, name='sellerhome'),
   path('sellerprofile/', views.sellerprofile, name='sellerprofile'),
-  path('join_now/',views.joinnow,name='joinnow'),
+  # path('join_now/',views.joinnow,name='joinnow'),
 
   # admin 
     # path("admin-login/", views.AdminLoginView.as_view(), name="adminlogin"),

@@ -676,7 +676,7 @@ class CustomerRegistrationView(View):
 #                 form.add_error(None, 'Invalid email or password')
 #         return render(request,'app/seller/sellerlogin.html', {'form': form})
 
-
+@login_required
 def seller_dashboard( request):
     seller = Seller.objects.get(user=request.user)
     product = Product.objects.filter(seller=request.user)
@@ -692,17 +692,18 @@ def sellerprofile(request):
     context =  {'seller':seller, 'user':request.user}
     return render(request, 'app/seller/sellerprofile.html',context=context)
 
-
+@login_required
 def sellerhome(request):
     seller = Seller.objects.get(user=request.user)
     products = Product.objects.filter(seller=request.user)
     context = {
         'products':products,
-        'user':request.user
+        'user':request.user,
+        'seller':seller
     }
     return render(request, 'app/seller/sellerhome.html', context)
 
-
+@login_required
 def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
@@ -718,8 +719,8 @@ def add_product(request):
     
     return render(request, 'app/seller/add_product.html', {'form': form})
 
-def joinnow(request):
-   return render(request,'app/seller/link.html')
+# def joinnow(request):
+#    return render(request,'app/seller/link.html')
 
 def aboutus(request):
    return render(request,'app/about.html')
