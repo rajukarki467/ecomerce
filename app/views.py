@@ -537,61 +537,55 @@ def orders(request):
 
 @login_required
 def payment_done(request):
-  user = request.user
-  # custid = request.GET.get('custid')
-  customer = Customer.objects.get(user=user.pk)
-  payment = request.GET.get('payment')
-  cart = Cart.objects.filter(user=user)
-#   uid = uuid4()
-  for c in cart:
-    OrderPlaced(user=user,  product=c.product, quantity=c.quantity,total=c.total_cost).save()
-    if payment == 'e-sewa':
-        # return render(request, "app/esewarequest.html",{'total':c.total_cost,'uid':uid} )  
-       return redirect('/esewa-request')
-      
-    elif payment == 'khalti':
-        return redirect('/khalti-request' )
-    #    return redirect('/khalti-request')
-    c.delete()
-  return redirect("orders") 
+    user = request.user
+    customer = Customer.objects.get(user=user.pk)
+    payment = request.GET.get('payment')
+    cart = Cart.objects.filter(user=user)
+    for c in cart:
+        order = OrderPlaced(user=user, product=c.product, quantity=c.quantity, total=c.total_cost)
+        order.save()
+        if payment == 'e-sewa':
+            return redirect('/esewa-request')
+        elif payment == 'khalti':
+            return redirect('/khalti-request/' + str(order.id))
+        c.delete()
+    return redirect("orders")
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name='dispatch')
 class KhaltiRequestView(View):
-    def get(self, request, *args, **kwargs):
-        o_id = requests.GET.get("o_id")
-        order = OrderPlaced.objects.get(id=o_id)
+    def get(self, request, id, *args, **kwargs):
+        order = get_object_or_404(OrderPlaced, id=id, user=request.user)
         context = {
             "order": order,
         }
         return render(request, "app/khaltirequest.html", context)
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name='dispatch')
 class KhaltiVerifyView(View):
     def get(self, request, *args, **kwargs):
-        token = requests.GET.get("token")
-        o_id = requests.GET.get("order_id")
+        token = request.GET.get("token")
+        o_id = request.GET.get("order_id")
         user = request.user
         total = 0
-        shipping_cost=70
+        shipping_cost = 70
         cart_items = Cart.objects.filter(user=user)
         
         for item in cart_items:
             total += item.quantity * item.product.discounted_price
-        total+=shipping_cost
- 
+        total += shipping_cost
 
         url = "https://khalti.com/api/v2/payment/verify/"
         payload = {
             "token": token,
-            "total": total
+            "amount": total
         }
         headers = {
-            "Authorization": "Key test_secret_key_f59e8b7d18b4499ca40f68195a846e9b"
+            "Authorization": "Key test_secret_key_26defbc7620b48c0a4395c6948bd1967"
         }
 
-        order_obj = OrderPlaced.objects.get(id=o_id)
+        order_obj = get_object_or_404(OrderPlaced, id=o_id, user=user)
 
-        response = requests.post(url, payload, headers=headers)
+        response = requests.post(url, data=payload, headers=headers)
         resp_dict = response.json()
         if resp_dict.get("idx"):
             success = True
@@ -603,7 +597,6 @@ class KhaltiVerifyView(View):
             "success": success
         }
         return JsonResponse(data)
-
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -756,52 +749,6 @@ def resend_otp(request):
     
     context = {}
     return render(request, "app/resend_otp.html", context)
-    # Another way of varifying email  hhhhhhhhhhhhhhhh
-        # user = form.save(commit=False)
-        # user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
-        # user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
-
-    #     user = form.save()
-    #     user.is_active =False
-    
-    #     user.save()
-
-    #     # 
-    #     current_site = get_current_site(request)
-    #     subject = 'Account verification email'
-    #     message = render_to_string('app/email-varification.html', {
-    #        'user':user,
-    #        'domain':current_site.domain,
-    #        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
-    #        'token':user_tokenizer_generate.make_token(user),
-    #     })
-
-    #     user.email_user(subject=subject , message=message)
-    #     return redirect('emailverificationsent')
-    #     # return redirect('/accounts/login/')  # Redirect to a success page or some other view
-    # return render(request, 'app/customerregistration.html', {'form': form})
- 
-# def email_verification(request,uidb64,token):
-#    unique_id =force_str(urlsafe_base64_decode(uidb64))
-#    user=User.objects.get(pk=unique_id)
-#    if user and user_tokenizer_generate.check_token(user,token):
-#       user.is_active =True
-#       user.save()
-
-#       return redirect('emailverificationsuccess')
-#    else:
-#       return redirect('emailverificationfailed')
-
-# def email_verification_sent(request):
-#    return render(request,'app/email-varification-sent.html')
-
-# def email_verification_success(request):
-#     return redirect('login_view')
-
-# def email_verification_failed(request):
-#     return render(request,'app/email-varification-failed.html')
-# hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-
 
 @login_required
 def seller_dashboard( request):
@@ -846,8 +793,7 @@ def add_product(request):
     
     return render(request, 'app/seller/add_product.html', {'form': form})
 
-# def joinnow(request):
-#    return render(request,'app/seller/link.html')
+
 
 def aboutus(request):
    return render(request,'app/about.html')

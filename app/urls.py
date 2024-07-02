@@ -56,7 +56,7 @@ urlpatterns = [
     
     
 # payment urls
-   path('khalti-request/', views.KhaltiRequestView.as_view(), name='khalti_request'),
+   path('khalti-request/<str:id>', views.KhaltiRequestView.as_view(), name='khalti_request'),
    path('khalti-verify/', views.KhaltiVerifyView.as_view(), name='khalti_verify'),
    path('esewa-request/',views.EsewaRequestView.as_view(), name='esewa_request'),
    path('esewa-verify/',views.EsewaVerifyView.as_view(), name='esewa_verify'),
