@@ -1,4 +1,4 @@
-{% extends 'adminpages/adminbase.html' %}
+{% extends 'app/adminpages/adminbase.html' %}
 {% block title %}All Products{% endblock %}
 
 
@@ -6,8 +6,8 @@
 <div class="container"> 
     <div class="row">
         <div class="col-md-12">
-            <h3>All Product list</h3><hr>
-            <a href="{% url 'app:adminproductcreate' %}">Add New Product</a>
+            <h3 style="color: white; text-align: center; background-color: #3a4ad9; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">All Product list</h3><hr>
+            <a href="{% url 'adminproductcreate' %}" style="color: white; text-align: center; background-color: #7580dc; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Add New Product</a>
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -15,22 +15,65 @@
                         <th>Product Title</th>
                         <th>Image</th>
                         <th>Price</th>
-                        <th>Views</th>
+                        <th>Quantity</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Brand</th>
+                        <th>Created At</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in allproducts %}
+                    {% for p in products %}
                     <tr>
                         <td>{{forloop.counter}}</td>
                         <td>{{p.title}}</td>
-                        <td><img src="{{p.image.url}}" style="height: 60px;" alt=""></td>
-                        <td>{{p.selling_price}}</td>
-                        <td>{{p.view_count}}</td>
+                        <td><img src="{{p.product_image.url}}" style="height: 60px; width:60px;" alt=""></td>
+                        <td>{{p.discounted_price}}</td>
+                        <td>{{p.quantity}}</td>
+                        <td>{{p.description}}</td>
+                        <td>{{p.category}}</td>
+                        <td>{{p.brand}}</td>
+                        <td>{{p.created_at}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+</div>
+
+<div class="container">
+    <nav aria-label="...">
+      <ul class="pagination">
+          {% if products.has_previous %}
+          <li class="page-item">
+              <a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
+            </li>
+          {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+          </li>
+          {% endif %}
+  
+          {% for i in products.paginator.page_range %}
+          {% if i == products.number %}
+          <li class="page-item active"><a class="page-link">{{i}}</a></li>
+          {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+          {% endif %}
+          {% endfor %}
+  
+          {% if products.has_next %}
+          <li class="page-item">
+              <a class="page-link" href="?page={{ products.next_page_number }}">Next</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+          </li>
+          {% endif %}
+      </ul>
+    </nav>
+  
 </div>
 {% endblock %}

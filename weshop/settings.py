@@ -113,16 +113,30 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_REDIRECT_URL = '/profile/'
-EMAIL_BACKEND ='django.core.mail.backends.console.EmailBackend'
+
 
 SESSION_ENGINE ='django.contrib.sessions.backends.db'
 
 
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use database-backed sessions
+# SESSION_COOKIE_NAME = 'sessionid'
+# SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
+# SESSION_SAVE_EVERY_REQUEST = True
 
-# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_USE_TLS = True
 # EMAIL_PORT = 587
-# EMAIL_HOST_USER = "yourowngmail@gmail.com"
-# EMAIL_HOST_PASSWORD = "yourowngmailpassword"
+# EMAIL_HOST_USER = 'rajukarki467@gmail.com'
+# EMAIL_HOST_PASSWORD = 'ecbw ybsm jsuv iblm'
+# EMAIL_USE_SSL = False
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'rajuk019389@gmail.com'
+EMAIL_HOST_PASSWORD = 'bkbe fphj njas mnvi'
+EMAIL_USE_SSL = False
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField' 

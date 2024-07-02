@@ -2,10 +2,21 @@
 {% load static %}
 {% block title %}Login{% endblock title %}
 {% block main-content %}
-<div class="container">
+<style>
+
+  .thumbnail{
+    border-radius: 1rem;
+  }
+  .card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+</style>
+
+<div class="card container">
  <div class="row my-3">
-  <div class="col-sm-6 offset-sm-3">
-   <h3>Login</h3>
+  <div class="card thumbnail offset-sm-3">
+   <h3 class="card thumbnail text-white text-center" style="background-color: #343a40;">Login</h3>
    <hr>
    <form action="" method="post" novalidate class="shadow p-5">
      {% csrf_token %}
@@ -15,7 +26,7 @@
         </div>
         {% endfor %}
      <small><a href="{% url 'password_reset' %}">Forgot Password ?</a></small><br>
-     <input type="submit" value="Login" class="btn btn-primary mt-4" >
+     <input type="submit" value="Login" class="card thumbnail btn-primary mt-4" style="background-color: rgb(181,76,76);" >
        <br>
      <div class="text-center text-primary fw-bold"><small>New to WeShop ? <a href="{% url 'customerregistration' %}"
         class="text-danger">Create an Account </a> </small></div>

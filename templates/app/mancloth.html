@@ -1,26 +1,44 @@
 {% extends 'app/base.html' %}
 {% load static %}
-{% block title %}Shoes{% endblock title %}
+{% block title %}Man Cloth{% endblock title %}
 {% block main-content %}
+
+<style>
+  .thumbnail {
+    border-radius: 1rem;
+  }
+  .card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+</style>
 <div class="container my-5" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
   <div class="row">
-    <div class="col-md-2" style="background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-      <div class = 'list-group ' >
-        <a href="{% url 'mancloth' %}" class ="list-group-item list-group-item-action" aria-current = "true">All Cosmetic product</a>
-        <a href="{% url 'manclothdata'  'kargo' %}" class ="list-group-item list-group-item-action" aria-current = "true">kargo</a>
-        <a href="{% url 'manclothdata' 'lee' %}" class ="list-group-item list-group-item-action" aria-current = "true">Lee</a>
-        <a href="{% url 'manclothdata' 'xyz' %}" class ="list-group-item list-group-item-action" aria-current = "true">xyz</a>
-        <a href="{% url 'manclothdata' 'below' %}" class ="list-group-item list-group-item-action" aria-current = "true">Below 1000 </a>
-        <a href="{% url 'manclothdata' 'above' %}" class ="list-group-item list-group-item-action" aria-current = "true">Above 1000 </a>
+    <div class="col-md-2" style="background-color: #ffffff; padding: 15px; border-radius: 8px;">
+      <div class="card thumbnail list-group">
+        <form method="get" id="filter-form">
+          <h5 class=" text-white" style=" background-color: #343a40;">Filter by Brand</h5>
+          <div class="list-group-item">
+            <input type="checkbox" name="brand" value="kargo"> Kargo<br>
+            <input type="checkbox" name="brand" value="lee"> Lee<br>
+            <input type="checkbox" name="brand" value="xyz"> XYZ<br>
+          </div>
+          <h5>Filter by Price</h5>
+          <div class="list-group-item">
+            <input type="radio" name="price" value="below"> Below 1000<br>
+            <input type="radio" name="price" value="above"> Above 1000<br>
+          </div>
+          <button type="submit" class=" thumbnail  btn-primary mt-2" style="background-color: rgb(181, 76, 76);">Apply Filters</button>
+        </form>
       </div>
     </div>
-    <div class="col-md-10">
-      <h2 class="page_heading text-center text-white  py-2 my-4" style="border-radius: 8px;background-color: rgb(236, 133, 133);">Products</h2>
+    <div class="card thumbnail col-md-10">
+      <h2 class="page_heading text-center text-white py-2 my-4" style="border-radius: 8px; background-color: #343a40;">Products</h2>
       <hr>
       <div class="row">
         {% for product in mancloth %}
         <div class="col-md-4 mb-4">
-          <div class="card border-light h-100" style="box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          <div class="card border-light h-100">
             <div class="card-body text-center">
               <a href="{% url 'product-detail' product.id %}" class="btn btn-link text-decoration-none">
                 <div class="item">
@@ -33,7 +51,7 @@
               </a>
               <div class="d-flex justify-content-between mt-3">
                 <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
-                <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(236, 133, 133);">More Details</a>
+                <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76);">More Details</a>
               </div>
             </div>
           </div>

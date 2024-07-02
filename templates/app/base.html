@@ -98,6 +98,26 @@
         display: inline-block; /* Ensures the image behaves like inline content */
       }
 
+      .mr-2{
+        border-radius: 1rem;
+      }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+
+      .wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .content {
+        flex: 1;
+      }
+
+
     </style>
   </head>
   <body>
@@ -159,9 +179,22 @@
               <li class="nav-item mx-2">
                 <a href="{% url 'showcart' %}" class="nav-link"><span class="badge bg-danger" id="totalitem">{{ totalitem }}</span> Cart</a>
               </li>
-              {% else %}
-
-
+                <li class="nav-item mx-2"></li>
+                <!--Start of Tawk.to Script-->
+                <script type="text/javascript">
+                  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+                  (function(){
+                  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                  s1.async=true;
+                  s1.src='https://embed.tawk.to/668386e79d7f358570d6064e/1i1osdv4q';
+                  s1.charset='UTF-8';
+                  s1.setAttribute('crossorigin','*');
+                  s0.parentNode.insertBefore(s1,s0);
+                  })();
+                  </script>
+                  <!--End of Tawk.to Script-->
+                </li>
+                {% else %}
               <li class="nav-item ">
                 <a class="nav-link " href="{% url 'login_view' %}" >
                   Login
@@ -183,23 +216,27 @@
     {% block main-content %} {% endblock main-content %}
 
     <!-- Start Footer -->
-    <footer class="footer text-center p-3 mt-1">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12 col-sm-12">
-            <p class="footer-icons">
-              <a href="https://www.facebook.com"  target="_blank"><span class="fab fa-facebook"></span></a>
-              <a href="https://www.whatsapp.com"  target="_blank"><span class="fab fa-whatsapp"></span></a>
-              <a href="https://www.instagram.com"  target="_blank"><span class="fab fa-instagram"></span></a>
-              <a href="https://www.twitter.com" target="_blank"><span class="fab fa-twitter"></span></a>
-            </p>
-            <small>&copy; 2024 || Designed By WeShop Teams ||</small>
-            <br>
+    <div class="wrapper">
+      <div class="content">
+        <!-- Your content goes here -->
+      </div>
+      <footer class="footer text-center p-3 mt-1">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12 col-sm-12">
+              <p class="footer-icons">
+                <a href="https://www.facebook.com" target="_blank"><span class="fab fa-facebook"></span></a>
+                <a href="https://www.whatsapp.com" target="_blank"><span class="fab fa-whatsapp"></span></a>
+                <a href="https://www.instagram.com" target="_blank"><span class="fab fa-instagram"></span></a>
+                <a href="https://www.twitter.com" target="_blank"><span class="fab fa-twitter"></span></a>
+              </p>
+              <small>&copy; 2024 || Designed By WeShop Teams ||</small>
+              <br>
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
-    <!-- End Footer -->
+      </footer>
+    </div>
 
     <!-- Jquery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>

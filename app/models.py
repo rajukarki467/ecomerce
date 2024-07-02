@@ -1,4 +1,5 @@
 from datetime import timezone
+import secrets
 from django.db import models
 from django.contrib.auth.models import User 
 from django.core.validators import MaxValueValidator,MinValueValidator
@@ -126,6 +127,7 @@ class Seller(models.Model):
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100,null=True, blank=True)
     image = models.ImageField(upload_to="admins/", null=False, blank=False)
     mobile = models.CharField(max_length=20,null=False,blank=False,validators=[validate_mobile_number])
 
@@ -142,6 +144,7 @@ CATEGORY_CHOICES =   (
 
 class Product(models.Model):
     seller = models.ForeignKey(User,on_delete=models.CASCADE)
+    admin = models.ForeignKey(Admin,on_delete=models.CASCADE,null=True, blank=True)
     title =models.CharField(max_length=100)
     selling_price =models.PositiveIntegerField()
     discounted_price = models.PositiveIntegerField()
@@ -185,9 +188,7 @@ class Cart(models.Model):
 
 
 ORDER_STATUS = (
-   ('Accepted' ,'Accepted'),
-   ('Packed','Packed'),
-   ('On The way','On The way'),
+   ('Pending' ,'Pending'),
    ('Delivered','Delivered'),
    ('Cancel','Cancel'),
 )
@@ -235,3 +236,12 @@ class Rating(models.Model):
         return str(self.user)
     
     
+class OtpToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otps")
+    otp_code = models.CharField(max_length=6, default=secrets.token_hex(3))
+    tp_created_at = models.DateTimeField(auto_now_add=True)
+    otp_expires_at = models.DateTimeField(blank=True, null=True)
+    
+    
+    def __str__(self):
+        return self.user.username

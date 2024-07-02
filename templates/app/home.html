@@ -36,6 +36,25 @@
     height: 500px;
     object-fit: cover;
 }
+.thumbnail{
+  border-radius: 1rem;
+}
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+.pagination {
+  border-radius: 1rem;
+  margin-top: 1rem;
+}
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: rgb(181, 76, 76);
+}
+.body{
+  background-color: #ffffff;
+}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -59,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
 {% block livesale %}
 <!-- Live Sale Section -->
 <div class="container my-3">
-  <div class="row bg-danger text-center text-white border-bottom shadow p-3">
+  <div class="row text-center text-white border-bottom shadow p-3" style="background-color: #343a40;">
     <h1>SALE IS LIVE NOW</h1>
     <div class="moving-text">
       <span>5% Instant Discount on NIC Asia Bank Credit and Debit Card. Terms and Conditions Applied (For details visit Bank's official Website)</span>
@@ -91,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <br><hr>
 
 <div class="container">
-  <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Recommended Products</h2>
+  <h2 class="page_heading" style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Recommended Products</h2>
   
   {% if recommended_products %}
 
@@ -101,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="col-md-4" style="width: 100%;">
           <div class="card" style="border: 1px solid #ededed;">
               <div class="card-body text-center">
-                  <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
+                  <a href="{% url 'product-detail' product.id %}" class="btn btn-link"></a>
                       <div class="item">
                           <h5 class="fw-bold text-uppercase">{{ product.name }}</h5>
                           <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}" height="150px" width="150px">
@@ -109,10 +128,10 @@ document.addEventListener('DOMContentLoaded', function () {
                               <span class="fw-bold">{{product.title }}</span><br><span class="fs-5">Rs. {{ product.discounted_price }}</span>
                           </div>
                       </div>
-                  </a>
+                  
                   <div class="d-flex justify-content-between mt-3">
                       <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
-                      <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(236, 133, 133);">More Details</a>
+                      <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76);">More Details</a>
                   </div>
               </div>
           </div>
@@ -129,14 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 <hr>
 <div class="container">
-  <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Latest Products</h2>
+  <h2 class="page_heading" style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Latest Products</h2>
   {% if latestproduct %}
   <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 2rem;">
       {% for product in latestproduct  %}
       <div class="col-md-4" style="width: 100%;">
           <div class="card" style="border: 1px solid #ededed;">
               <div class="card-body text-center">
-                  <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
+                  <a href="{% url 'product-detail' product.id %}" class="btn btn-link"></a>
                       <div class="item">
                           <h5 class="fw-bold text-uppercase">{{ product.name }}</h5>
                           <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}" height="150px" width="150px">
@@ -144,10 +163,10 @@ document.addEventListener('DOMContentLoaded', function () {
                               <span class="fw-bold">{{product.title }}</span><br><span class="fs-5">Rs. {{ product.discounted_price }}</span>
                           </div>
                       </div>
-                  </a>
+                  
                   <div class="d-flex justify-content-between mt-3">
                     <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
-                    <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(236, 133, 133);">More Details</a>
+                    <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76);">More Details</a>
                   </div>
               </div>
           </div>
@@ -161,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 <hr>
 <div class="container">
-  <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Products</h2>
+  <h2 class="page_heading" style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Products</h2>
   
   {% if product_list %}
 
@@ -171,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="col-md-4" style="width: 100%;">
           <div class="card" style="border: 1px solid #ededed;">
               <div class="card-body text-center">
-                  <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
+                  <a href="{% url 'product-detail' product.id %}" class="btn btn-link"></a>
                       <div class="item">
                           <h5 class="fw-bold text-uppercase">{{ product.name }}</h5>
                           <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}" height="150px" width="150px">
@@ -179,10 +198,10 @@ document.addEventListener('DOMContentLoaded', function () {
                               <span class="fw-bold">{{product.title }}</span><br><span class="fs-5">Rs. {{ product.discounted_price }}</span>
                           </div>
                       </div>
-                  </a>
+                  
                   <div class="d-flex justify-content-between mt-3">
                     <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
-                    <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(236, 133, 133);">More Details</a>
+                    <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76);">More Details</a>
                   </div>
               </div>
           </div>
@@ -283,3 +302,5 @@ $(document).ready(function(){
 </script>
 <!-- End Payment Info Section -->
 {% endblock main-content %}
+</body>
+</html?

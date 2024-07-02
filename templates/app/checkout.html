@@ -2,65 +2,88 @@
 {% load static %}
 {% block title %}Checkout Now{% endblock title %}
 {% block main-content %}
-<div class="container">
- <div class="row mt-5">
-  <div class="col-sm-6">
-  <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Order Summary</h2>
+<style>
+  .vertical-divider {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+  }
+  .vertical-divider .col {
+      flex: 1;
+      overflow-y: auto;
+  }
 
-    {% for item in cartitems %}
-    <hr>
-    <div class="row">
-      <div class="col-sm-3 text-center align-self-center">
-        <img src="{{item.product.product_image.url }}" alt="" srcset="" class="img-fluid img-thumbnail shadow-sm" height="250" width="150"> </div>
-        <div class="col-sm-9">
-            <div class="my-3">
-              <h5 style="text-align: center;">{{item.product.title}}</h5>
-              <label for="description" style="text-align: center;">{{item.product.description}}</label>
-              <label for="quantity">Quantity: {{item.quantity}}</label>
-            </div> 
-            <br>
-            <hr>
-            <div class="d-flex justify-content-between">
-              <p class="mb-0" style="text-align: center;"><span><strong>Rs. {{item.product.discounted_price}} </strong></span></p>
-            </div>
+  .thumbnail{
+    border-radius: 1rem;
+  }
+  .card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+</style>
+
+<div class="container vertical-divider">
+  <div class="row">
+      <div class="col">
+          <h2 class="page_heading" style="color: white; text-align: center; background-color:#343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Order Summary</h2>
+
+          {% for item in cartitems %}
+          <hr>
+          <div class="row">
+              <div class="card col-sm-3 text-center align-self-center">
+                  <img src="{{item.product.product_image.url }}" alt="" srcset="" class=" card thumbnail img-thumbnail shadow-sm" height="150px" width="150px">
+              </div>
+              <div class="col-sm-9">
+                  <div class="my-3">
+                      <h5 style="text-align: center;">{{item.product.title}}</h5>
+                      <label for="description" style="text-align: center;">{{item.product.description}}</label>
+                      <label for="quantity">Quantity: {{item.quantity}}</label>
+                  </div>
+                  <br>
+                  <hr>
+                  <div class="d-flex justify-content-between">
+                      <p class="mb-0" style="text-align: center;"><span><strong>Rs. {{item.product.discounted_price}}</strong></span></p>
+                  </div>
+              </div>
           </div>
+          <hr>
+          {% endfor %}
+          <p class="fw-bold">Total Cost + Rs.70 = Rs.{{totalamount}}</p>
+          <small>Terms and Conditions: Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia, ullam saepe! Iure optio repellat dolor velit, minus rem. Facilis cumque neque numquam laboriosam, accusantium adipisci nisi nihil in et quis?</small>
       </div>
-      <hr>
-      {% endfor %}
-      <p class="fw-bold">Total Cost + Rs.70 =Rs.{{totalamount}}</p>
-    <small>Term and Condition: Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia, ullam saepe! Iure optio repellat dolor velit, minus rem. Facilis cumque neque numquam laboriosam, accusantium adipisci nisi nihil in et quis?</small>
-  </div>
-  <div class="col-sm-4 offset-sm-1">
-    <h2 class="page_heading" style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Select Shipping Address</h2>
-    <hr>
-    <form action="/paymentdone">
-      {% for ad in add %}
-      <div class="card">
-        <div class="card-body">
-        <h5>{{ad.name}}</h5>
-        <p>{{ad.locality}},{{ad.city}},{{ad.state}}</p>
-        </div>
+
+      <div class="col">
+          <h2 class="page_heading" style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Select Shipping Address</h2>
+          <hr>
+          <form action="/paymentdone">
+              {% for ad in add %}
+              <div class="card">
+                  <div class="card-body">
+                      <h5>{{ad.name}}</h5>
+                      <p>{{ad.locality}}, {{ad.city}}, {{ad.state}}</p>
+                  </div>
+              </div>
+              <div class="form-check mt-2 mb-5">
+                  <input class="form-check-input" type="radio" name="custid" id="custadd{{forloop.counter}}" value="{{ad.id}}">
+                  <label class="form-check-label fw-bold" for="custadd{{forloop.counter}}">
+                      Address: {{forloop.counter}}
+                  </label>
+              </div>
+              {% endfor %}
+              <div class=" card form-check mt-2 mb-5">
+                  <label for="payment">Payment Option:</label>
+                  <select id="payment" name="payment">
+                      <option value="Cash">Cash on Delivery</option>
+                      <option value="e-sewa">e-sewa</option>
+                      <option value="khalti">khalti</option>
+                  </select>
+              </div>
+              <div class="text-end">
+                  <button type="submit" class="thumbnail btn-warning mt-3 px-5 fw-bold" style="background-color: rgb(181,76,76);">Checkout</button>
+              </div>
+          </form>
       </div>
-        <div class="form-check mt-2 mb-5">
-          <input class="form-check-input" type="radio" name="custid" id="custadd{{forloop.counter}}" value="{{ad.id}}">
-          <label class="form-check-label fw-bold" for="custadd{{forloop.counter}}">
-            Address: {{forloop.counter}} </label>
-        </div>
-        {% endfor %}
-        <div class="form-check mt-2 mb-5">
-          <label for="payment">Payment Option:</label>
-                          <select id="payment" name="payment">
-                            <option value="Cash">Cash on Delivery</option>
-                            <option value="e-sewa">e-sewa</option>
-                            <option value="khalti">khalti</option>
-                          </select>
-        </div>
-        
-        <div class="text-end">
-          <button type="submit" class="btn btn-warning mt-3 px-5 fw-bold" style="background-color: rgb(236, 133, 133);">Checkout</button>
-        </div>
-      </form>
-    </div>
   </div>
 </div>
+
 {% endblock main-content %}

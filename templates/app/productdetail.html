@@ -3,7 +3,17 @@
 {% block title %}Product Detail{% endblock title %}
 
 {% block main-content %}
+<style>
 
+.thumbnail{
+  border-radius: 1rem;
+}
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+</style>
 <div class="container my-5">
   <div class="card" style="border: 1px solid #ededed;">
   <div class="row ">
@@ -11,7 +21,7 @@
         <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
           <div class="item">
             <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}"
-              height="300px" width="300px">
+              height="300px" width="300px" style="border-radius: 1rem;box-shadow: #f17981;">
           </div>
         </a>
       </div>
@@ -20,7 +30,7 @@
 
         <hr>
         <p style="text-align: center;">{{product.description}}</p> <br>
-        <h4 style="text-align: center;">Rs. {{product.discounted_price}} <br><small
+        <h4 style="text-align: center;">Rs. {{final_price}} <br><small
             class="fw-light text-decoration-line-through" style="text-align: center;">{{product.selling_price}} </small>
         </h4> <br>
 
@@ -45,11 +55,11 @@
         <form action="/buy" class="d-inline">
           {% csrf_token %}
           <input type="hidden" name="prod_id" value="{{ product.id }}" id="prod_id">
-          <button type="submit" class="btn btn-primary shadow px-5 py-2">Buy Now</button>
+          <button type="submit" class="btn btn-warning shadow px-5 py-2">Buy Now</button>
         </form>
 
         <h5 class="mt-5"
-          style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">
+          style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">
           Available Offers</h5>
         <ul>
           <li>Bank Offer 5% Unlimited Cashback on Bank Credit</li>
@@ -59,19 +69,17 @@
       </div>
 
        <hr>
-      {% if item_already_in_rating %}
+       {% if not rating_exists %}
       <div class="review-content mt-4">
         <p class="star-rating">{{ rating.rating }} rating</p>
         <p class="fw-bold">{{ rating.user }}</p>
         <p>{{ rating.review }}</p>
       </div>
-      <hr>
-      {% else %}
       <form method="post" action="/product-detail/{{ product.id }}">
         {% csrf_token %}
         <div class="rating-form mt-4">
           <h4 class="mb-3"
-            style="color: white; text-align: center; background-color: #f17981; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">
+            style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">
             Submit Your Rating:</h4>
 
           {% if messages %}
@@ -91,21 +99,23 @@
           </div>
 
           <div class="form-group mt-3">
-            <label for="review" class="mb-3">Write a Review:</label>
+            <label for="review" class="mb-3 text-white" style="background-color: #343a40;">Write a Review:</label>
             <textarea class="form-control" name="review" id="review" rows="3"></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary shadow px-5 py-2">
-            {% if rating_exists %}Update Rating{% else %}Submit Rating{% endif %}
+          <button type="submit" class="btn btn-primary shadow px-5 py-2"  style="background-color: rgb(181, 76, 76);">Submit Rating
+            <!-- {% if rating_exists %}Update Rating{% else %}Submit Rating{% endif %} -->
           </button>
         </div>
       </form>
-      {% endif %}
-
+      {% else %}
+      <p>YOu already give a rating foy this product</p>
+      {% endif %} 
+      
       <div class="row mt-4">
         <div class="col-md-6">
-          <div id="all-ratings" class="collapse show">
-            <h4>All Ratings and Reviews:</h4>
+          <div id="all-ratings" class="collapse show" >
+            <h4 class="text-white" style="background-color: #343a40;" >All Ratings and Reviews:</h4>
             <div class="review-cards">
               {% for rating in all_ratings %}
               <div class="review-card mb-3">
@@ -130,14 +140,14 @@
       </div>
        <hr>
       <div class="container mt-5">
-        <h2 class="page_heading text-center text-white bg-danger py-2">Related Products</h2>
+        <h2 class="page_heading text-center text-white py-2" style="background-color: #343a40;">Related Products</h2>
         <div class="row"
           style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 2rem;">
           {% for product in related_product %}
           <div class="col-md-12">
             <div class="card" style="border: 1px solid #ededed;">
               <div class="card-body text-center">
-                <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
+                <a href="{% url 'product-detail' product.id %}" class="btn btn-link"></a>
                   <div class="item">
                     <h5 class="fw-bold text-uppercase">{{ product.name }}</h5>
                     <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}" height="150px"
@@ -147,11 +157,10 @@
                       <span class="fs-5">Rs. {{ product.discounted_price }}</span>
                     </div>
                   </div>
-                </a>
                 <div class="d-flex justify-content-between mt-3">
                   <i class="fa fa-shopping-cart text-muted" style="cursor: pointer;"></i>
                   <a href="{% url 'product-detail' product.id %}" class="btn btn-primary"
-                    style="background-color: rgb(236, 133, 133);">More Details</a>
+                  style="background-color: rgb(181, 76, 76);">More Details</a>
                 </div>
               </div>
             </div>

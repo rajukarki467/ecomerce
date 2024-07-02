@@ -2,33 +2,51 @@
 {% load static %}
 {% block title %}Profile{% endblock title %}
 {% block main-content %}
-<div class="container my-5">
- <div class="row">
-  <h3>Welcome <span class="text-capitalize">{{request.user}}</span></h3>
+
+<style>
+  .thumbnail {
+    border-radius: 1rem;
+  }
+  .card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+</style>
+
+<div class="card container my-5">
+ <div class="thumbnail row">
+  <h3 class="thumbnail text-white text-center" style="background-color: #343a40;">Welcome <span class="text-capitalize">{{ request.user.username }}</span></h3>
   <div class="col-sm-2 border-end">
    <ul class="list-unstyled">
-    <li class="d-grid"><a href="{% url 'profile' %}" class="btn {{active}}">Profile</a></li>
-    <li class="d-grid"><a href="{% url 'address' %}" class="btn ">Address</a></li>
-   </ul>
+    <li class="d-grid thumbnail"><a href="{% url 'profile' %}" class="card thumbnail btn" style="background-color: rgb(181, 76, 76);">Profile</a></li>
+      {% if profile.image %}
+        <img class="card thumbnail img-fluid" src="{{ profile.image.url }}" alt="Profile Image" style="height: 150px; width: 150px;">
+      {% endif %}
+  </ul>
   </div>
-  <div class="col-sm-8 offset-sm-1">
-    <form action="" method="post" novalidate >
-      {% csrf_token %}
-      {% for fm in form %}
-         <div class=" form-group col-lg-6 mb-3">
-              {{fm.label_tag}}  {{fm}}  <small class="text-danger">{{ fm.errors | striptags }}</small> <br>
+  <div class="col-sm-9 offset-sm-1">
+    <div class="row">
+      <div class="thumbnail col-sm-6">
+         <div class="card thumbnail">
+             <div class="card-body">
+                 <h3 class="text-center">Profile Information</h3>
+                 {% if role == 'customer' %}
+                   <p>Name: {{ profile.name }}</p>
+                   <p>Address: {{ profile.locality }}, {{ profile.city }}, {{ profile.state }}</p>
+                   <p>Phone Number: {{ profile.phone }}</p>
+                 {% elif role == 'seller' %}
+                   <p>Name: {{ profile.user.username }}</p>
+                   <p>Address: {{ profile.address }}</p>
+                   <p>Contact: {{ profile.phone }}</p>
+                 {% else %}
+                   <p>Name: {{ profile.name }}</p>
+                   <p>Contact: {{ profile.mobile }}</p>
+                 {% endif %}
+             </div>
          </div>
-         {% endfor %}
-      <div class="col-12 mt-3">
-        <button type="Submit" class="btn btn-primary mb-3">Submit</button>
-      </div>       
-    </form>
-    {% if messages %} 
-    {% for message in messages %}
-    <p {% if message.tags %} class="alert alert-{{message.tags}} mb-5" {% endif %}>{{message}}</p>
-    {% endfor %}
-    {% endif %}
-  </div>
+      </div>
+    </div>
+   </div>
  </div>
 </div>
 {% endblock main-content %}

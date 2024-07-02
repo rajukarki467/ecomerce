@@ -2,5 +2,45 @@
 {% load static %}
 {% block title %} Buy Now{% endblock title %}
 {% block main-content %}
-    <h1>We are the emerging ecommerce in the City.</h1>
+<style>
+    .thumbnail {
+        height: 4rem;
+        border-radius: 1rem;
+    }
+    .card {
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<div class="card container my-5" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+    <div class="thumbnail row">
+        <h1 class="card thumbnail text-white text-center" style="background-color: #343a40;">We are the emerging ecommerce in the City.</h1>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 style="text-align: center;">About Us</h2>
+            <p>
+                Welcome to our ecommerce clothing store! We are dedicated to bringing you the latest and greatest in fashion. Our store is committed to providing a wide range of high-quality clothing options for all styles and preferences. Whether you're looking for trendy pieces, classic staples, or unique fashion finds, we have something for everyone.
+            </p>
+            <p>
+                Our mission is to offer an exceptional shopping experience by curating a diverse collection of clothing items that cater to all occasions. From casual wear to formal attire, our selections are designed to keep you looking stylish and feeling confident. We take pride in offering products that not only look great but also stand the test of time.
+            </p>
+            <p>
+                We believe that fashion is a powerful form of self-expression, and our goal is to help you express your individuality through our clothing. Our team is constantly on the lookout for the latest trends and timeless classics to ensure that our inventory is always fresh and exciting.
+            </p>
+            <p>
+                Thank you for choosing us as your go-to destination for all your fashion needs. We look forward to serving you and helping you discover your unique style.
+            </p>
+        </div>
+    </div>
+
+    <div class="card row">
+        <h2 class=" thumbnail  text-center">Developers information</h2>
+        <p class="thumbnail text-center">Nepal Engineering College,</p>
+        <p class="thumbnail text-center">Raju Karki  CRN: 019389</p>
+        <p class="thumbnail text-center">Pawan Achhami, CRN: 019358</p>
+        <p class="thumbnail text-center">Pranav Baskota, CRN: 01960</p>
+    </div>
+</div>
 {% endblock main-content %}

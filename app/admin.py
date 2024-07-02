@@ -14,17 +14,17 @@ from .models import (
 
 @admin.register(Customer)
 class CustomerModelAdmin(admin.ModelAdmin):
-    list_display = ['id','user','name','locality','city','state']
+    list_display = ['id','user','name','locality','city','state','phone','image']
 
 
 @admin.register(Admin)
-class CustomerModelAdmin(admin.ModelAdmin):
-    list_display = ['id','user', 'image','mobile' ]
+class AdminModelAdmin(admin.ModelAdmin):
+    list_display = ['id','user','name' ,'image','mobile' ]
 
 
 @admin.register(Product)
 class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ['id','title','selling_price','discounted_price','description','brand','category','product_image','created_at']
+    list_display = ['id','title','selling_price','discounted_price','description','brand','category','product_image','created_at','quantity']
 
 @admin.register(Cart)
 class CartModelAdmin(admin.ModelAdmin):
@@ -48,7 +48,7 @@ admin.site.register(OrderPlaced, OrderPlacedAdmin)
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ('user','phone', 'address')
+    list_display = ('user','phone', 'address','image')
     # search_fields = ('firstname', 'lastname', 'username', 'email', 'phone')
 
 

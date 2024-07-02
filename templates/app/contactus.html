@@ -1,8 +1,27 @@
 {% extends 'app/base.html' %}
 {% load static %}
-{% block title %} Contact us{% endblock title %}
+{% block title %} Contact Us {% endblock title %}
 {% block main-content %}
-    <h1>To Contact us, Call the following numbers</h1>
-    <p>9861365371</p>
-    <p>9861365371</p>
+<style>
+    .thumbnail {
+        border-radius: 1rem;
+    }
+    .card {
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<div class="card container my-5" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+    <div class="thumbnail row">
+        <h2 class="card thumbnail text-white text-center" style="background-color: #343a40;">Customer Service</h2>
+        <p class="thumbnail text-center">For order status inquiry, please click <a href="#">here.</a></p>
+        <p class="thumbnail text-center">To cancel and return ordered items, please log in with your account <a href="#">here.</a></p>
+        <p class="thumbnail text-center">For other concerns, feel free to visit our Help Center Page <a href="#">here.</a></p>
+        <p class="thumbnail text-center">Can't find the answer you are looking for? We are  available 24 hours a day. LIVE CHAT services are available from 8 am to 11 pm, 7 Days a Week.</p>
+    </div>
+    <div class="thumbnail row">
+      <h4 class=" text-center">You have problem,Contact here :</h4>
+      <p class="thumbnail text-center">phone no: 9861365371..</p>
+    </div>
+</div>
 {% endblock main-content %}

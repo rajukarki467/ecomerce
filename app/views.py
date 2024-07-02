@@ -1,19 +1,14 @@
-from datetime import time
-import uuid
 from django.core.paginator import Paginator
 from uuid import uuid4
 from venv import logger
-from django.shortcuts import get_object_or_404, render ,redirect,reverse
+from django.shortcuts import get_object_or_404, render ,redirect
 from django.views import View
 import numpy as np
-from .models import Customer,Product,Cart,OrderPlaced
-from .forms import CustomerRegistrationForm , CustomerProfileForm
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-import hashlib
 import requests
 from django.urls import reverse_lazy
 from .models import *
@@ -21,6 +16,16 @@ from .forms import *
 import xml.etree.ElementTree as ET
 import logging
 from django.contrib.auth import authenticate, login
+from django.core.mail import send_mail
+from .models import OtpToken
+# for email varification 
+from django.contrib.sites.shortcuts import get_current_site
+from .token import user_tokenizer_generate
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes,force_str
+from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
+
+
 
 def login_view(request):
    if request.method == 'POST':
@@ -30,9 +35,12 @@ def login_view(request):
       user = authenticate(request, username=username, password=password)
       if user is not None: 
         login(request, user)
-        seller = Seller.objects.get(user=user)
-        if seller:
+        # seller = Seller.objects.get(user=user)
+        # admin = Admin.objects.get(user=user)
+        if Seller.objects.filter(user=user).exists():
             return redirect('sellerhome')
+        elif Admin.objects.filter(user=user).exists():
+            return redirect('adminhome')
         return redirect('home')
    
    form = LoginForm()
@@ -85,34 +93,27 @@ def user_based_collaborative_filtering(user, num_recommendations=8):
     return list(recommended_products)[:num_recommendations]
     
 
-def newproductdetail(request, pk):
-    latest = LatestProduct.objects.filter(id=pk)
-    product = get_object_or_404(Product, id=pk)
-    related_product = Product.objects.filter(category=product.category).exclude(id=pk)[:3]
-
-    return render(request, 'app/newproductdetail.html',  {'product':product, 'related_product':related_product, 'lat_prod':latest})
-
-
-    
 def search_view(request):
-    # whatever user write in search box we get in query (Q(product =prod_id) & Q(user=request.user
-    query = request.GET['q']
-    products=Product.objects.all().filter(Q(category__icontains=query)|Q(brand__icontains=query)|Q(discounted_price__icontains=query) 
-                                            )
-    if 'product_ids' in request.COOKIES:
-        product_ids = request.COOKIES['product_ids']
-        counter=product_ids.split('|')
-        product_count_in_cart=len(set(counter))
-    else:
-        product_count_in_cart=0
+    query = request.GET.get('q', '')
+    products = Product.objects.filter(
+        Q(category__icontains=query) |
+        Q(brand__icontains=query) |
+        Q(discounted_price__icontains=query)
+    ) if query else Product.objects.none()
 
-    # word variable will be shown in html when user click on search button
-    word="Searched Result :"
+    product_ids = request.COOKIES.get('product_ids', '')
+    product_count_in_cart = len(set(product_ids.split('|'))) if product_ids else 0
 
-    if request.user.is_authenticated:
-        return render(request,'app/search.html',{'products':products,'word':word,'product_count_in_cart':product_count_in_cart ,'query':query})
-    return render(request,'app/search.html',{'products':products,'word':word,'product_count_in_cart':product_count_in_cart,'query':query})
+    word = "Searched Result:"
 
+    context = {
+        'products': products,
+        'word': word,
+        'product_count_in_cart': product_count_in_cart,
+        'query': query,
+    }
+
+    return render(request, 'app/search.html', context)
 
 class ProductView(View):
  def get(self,request):
@@ -127,6 +128,8 @@ class ProductView(View):
   product_list = paginator.get_page(page_number)
   if request.user.is_authenticated:
    recommended_products = user_based_collaborative_filtering(request.user)
+   print(recommended_products)
+   
    for i in Cart.objects.filter(user=request.user):
     totalitems+=i.quantity
   return render(request ,'app/home.html',{'latestproduct': latestproduct,'product_list':product_list,'totalitem':totalitems,'recommended_products': recommended_products})
@@ -155,9 +158,10 @@ class ProductDetailView(View):
 
         except Product.DoesNotExist:
             raise
-        
+        final_price = product.selling_price-product.discounted_price
         return render(request, 'app/productdetail.html', {
             'product': product,
+            'final_price':final_price,
             'item_already_in_cart': item_already_in_cart,
             'totalitem': totalitems,
             'related_product': related_product,
@@ -239,7 +243,8 @@ def plus_cart(request):
  if request.method == 'GET':
   prod_id= request.GET['prod_id']
   c = Cart.objects.get(Q(product =prod_id) & Q(user=request.user))
-  if c.quantity <5:
+  product = Product.objects.get(id=prod_id)
+  if c.quantity <product.quantity:
    c.quantity+=1
   c.save()
   amount= 0.0 
@@ -345,75 +350,128 @@ class category(View):
                 'womansclothes':womansclothes, 'shoes':shoes , 'cosmeticproduct':cosmeticproduct , 'totalitem':totalitems})
  
 
-def shoes(request , data = None):
- if data == None:
-  shoes = Product.objects.filter(category='S')
- elif data =='jordon'or data =='nike' or data == 'Goldmine':
-  shoes = Product.objects.filter(category='S').filter(brand =data)
- elif data =='below':
-  shoes = Product.objects.filter(category='S').filter (discounted_price__lt=1000)
- elif data =='above':
-  shoes = Product.objects.filter(category='S').filter (discounted_price__gt=1000) 
- 
- totalitems=0
- if request.user.is_authenticated:
-  for i in Cart.objects.filter(user=request.user):
-   totalitems+=i.quantity
+def shoes(request):
+    shoes = Product.objects.filter(category='S')
+    
+    # Get filter parameters from request
+    brand = request.GET.get('brand')
+    price_range = request.GET.get('price')
 
- return render(request, 'app/shoes.html',{'shoes':shoes, 'totalitem':totalitems})
+    # Apply brand filter if provided
+    if brand:
+        brand_list = brand.split(',')
+        shoes = shoes.filter(brand__in=brand_list)
 
-def cosmetic(request , data = None):
- if data == None:
-  cosmetic = Product.objects.filter(category='C')
- elif data =='lakme'or data =='lotusherbals' or data == 'sugar':
-  cosmetic = Product.objects.filter(category='C').filter(brand =data)
- elif data =='below':
-  cosmetic = Product.objects.filter(category='C').filter (discounted_price__lt=1000)
- elif data =='above':
-  cosmetic = Product.objects.filter(category='C').filter (discounted_price__gt=1000) 
+    # Apply price range filter if provided
+    if price_range == 'below':
+        shoes = shoes.filter(discounted_price__lt=1000)
+    elif price_range == 'above':
+        shoes = shoes.filter(discounted_price__gt=1000)
 
- totalitems=0
- if request.user.is_authenticated:
-  for i in Cart.objects.filter(user=request.user):
-   totalitems+=i.quantity
+    totalitems = 0
+    if request.user.is_authenticated:
+        for item in Cart.objects.filter(user=request.user):
+            totalitems += item.quantity
 
- return render(request, 'app/cosmetic.html',{'cosmetic':cosmetic,'totalitem':totalitems})
+    return render(request, 'app/shoes.html', {'shoes': shoes, 'totalitem': totalitems})
 
-def mancloth(request , data = None):
- if data == None:
-  mancloth = Product.objects.filter(category='M')
- elif data =='kargo'or data =='lee' or data =='xyz':
-  mancloth = Product.objects.filter(category='M').filter(brand =data)
- elif data =='below':
-  mancloth = Product.objects.filter(category='M').filter (discounted_price__lt=1000)
- elif data =='above':
-  mancloth = Product.objects.filter(category='M').filter (discounted_price__gt=1000) 
- totalitems=0
- if request.user.is_authenticated:
-  for i in Cart.objects.filter(user=request.user):
-   totalitems+=i.quantity
 
- return render(request, 'app/mancloth.html',{'mancloth':mancloth,'totalitem':totalitems})
+def cosmetic(request):
+    cosmetic = Product.objects.filter(category='C')
+    
+    # Get filter parameters from request
+    brand = request.GET.get('brand')
+    price_range = request.GET.get('price')
 
-def womancloth(request , data = None):
- if data == None:
-  womancloth = Product.objects.filter(category='W')
- elif data =='xyz'or data =='abc' or data =='kargo':
-  womancloth = Product.objects.filter(category='W').filter(brand =data)
- elif data =='below':
-  womancloth = Product.objects.filter(category='W').filter (discounted_price__lt=1000)
- elif data =='above':
-  womancloth = Product.objects.filter(category='W').filter (discounted_price__gt=1000) 
+    # Apply brand filter if provided
+    if brand:
+        brand_list = brand.split(',')
+        cosmetic = cosmetic.filter(brand__in=brand_list)
 
- totalitems=0
- if request.user.is_authenticated:
-  for i in Cart.objects.filter(user=request.user):
-   totalitems+=i.quantity
- 
- return render(request, 'app/womancloth.html',{'womancloth':womancloth,'totalitem':totalitems})
+    # Apply price range filter if provided
+    if price_range == 'below':
+        cosmetic = cosmetic.filter(discounted_price__lt=1000)
+    elif price_range == 'above':
+        cosmetic = cosmetic.filter(discounted_price__gt=1000)
+
+    totalitems = 0
+    if request.user.is_authenticated:
+        for item in Cart.objects.filter(user=request.user):
+            totalitems += item.quantity
+
+    return render(request, 'app/cosmetic.html', {'cosmetic': cosmetic, 'totalitem': totalitems})
+
+
+def mancloth(request):
+    mancloth = Product.objects.filter(category='M')
+    
+    # Get filter parameters from request
+    brand = request.GET.get('brand')
+    price_range = request.GET.get('price')
+
+    # Apply brand filter if provided
+    if brand:
+        brand_list = brand.split(',')
+        mancloth = mancloth.filter(brand__in=brand_list)
+
+    # Apply price range filter if provided
+    if price_range == 'below':
+        mancloth = mancloth.filter(discounted_price__lt=1000)
+    elif price_range == 'above':
+        mancloth = mancloth.filter(discounted_price__gt=1000)
+
+    totalitems = 0
+    if request.user.is_authenticated:
+        for item in Cart.objects.filter(user=request.user):
+            totalitems += item.quantity
+
+    return render(request, 'app/mancloth.html', {'mancloth': mancloth, 'totalitem': totalitems})
+
+
+def womancloth(request):
+    womancloth = Product.objects.filter(category='W')
+    
+    # Get filter parameters from request
+    brand = request.GET.get('brand')
+    price_range = request.GET.get('price')
+
+    # Apply brand filter if provided
+    if brand:
+        brand_list = brand.split(',')
+        womancloth = womancloth.filter(brand__in=brand_list)
+
+    # Apply price range filter if provided
+    if price_range == 'below':
+        womancloth = womancloth.filter(discounted_price__lt=1000)
+    elif price_range == 'above':
+        womancloth = womancloth.filter(discounted_price__gt=1000)
+
+    totalitems = 0
+    if request.user.is_authenticated:
+        for item in Cart.objects.filter(user=request.user):
+            totalitems += item.quantity
+
+    return render(request, 'app/womancloth.html', {'womancloth': womancloth, 'totalitem': totalitems})
 
 @login_required
 def checkout(request):
+ #Decrease quantity from product
+ if request.method=='POST':
+     orders = OrderPlaced.objects.filter(user=request.user)
+     totalitems = 0
+     for order in orders:
+        qty = order.product.quantity
+        totalitems += qty
+     p = Product.objects.get(id= order.product.pk)
+     if(p.quantity==0):
+        return HttpResponse("Product outof stock")
+     else:
+        p.quantity = qty - order.quantity
+    #   print(p.quantity)
+        p.save()
+        return redirect('orders')
+     
+
  user = request.user 
  add = Customer.objects.filter(user=user)
  cart_items = Cart.objects.filter(user=user)
@@ -429,53 +487,48 @@ def checkout(request):
  for i in Cart.objects.filter(user=request.user):
   totalitems+=i.quantity
  
+ 
+
  return render(request, 'app/checkout.html',{'add':add,'totalamount':totalamount,'cartitems': cart_items,'totalitem':totalitems})
 
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name='dispatch')
 class ProfileView(View):
- def get(self,request):
-  form = CustomerProfileForm()
-  totalitems=0
-  for i in Cart.objects.filter(user=request.user):
-   totalitems+=i.quantity
+    def get(self, request):
+        user = request.user
+        profile = None
+        role = None
 
-  return render(request,'app/profile.html',{'form':form,'active':'btn-primary','totalitem':totalitems})
- 
- def post(self,request):
-  form = CustomerProfileForm(request.POST)
-  if form.is_valid():
-   usr= request.user
-   name=form.cleaned_data['name']
-   locality=form.cleaned_data['locality']
-   city=form.cleaned_data['city']
-   state=form.cleaned_data['state']
-   reg = Customer(user=usr,name=name, locality=locality, city=city, state=state)
-   reg.save()
-   messages.success(request,'Congratulation !! Profile Updated Successfully')
+        if hasattr(user, 'customer'):
+            profile = user.customer
+            role = 'customer'
+        elif hasattr(user, 'seller'):
+            profile = user.seller
+            role = 'seller'
+        elif hasattr(user, 'adminprofile'):
+            profile = user.adminprofile
+            role = 'admin'
+        else:
+            profile = user  # Assuming admin or other roles
+            role = 'admin'
 
-  totalitems=0
-  for i in Cart.objects.filter(user=request.user):
-   totalitems+=i.quantity
- 
-  return render(request,'app/profile.html',{'form':form,'active':'btn-primary','totalitem':totalitems}) 
+        totalitems = sum(item.quantity for item in Cart.objects.filter(user=user))
 
+        context = {
+            'profile': profile,
+            'totalitems': totalitems,
+            'role': role
+        }
+        return render(request, 'app/profile.html', context)
 
-@login_required
-def address(request):
- add = Customer.objects.filter(user=request.user)
- totalitems=0
- for i in Cart.objects.filter(user=request.user):
-  totalitems+=i.quantity
- return render(request, 'app/address.html',{'add':add,'totalitem':totalitems})
 
 @login_required
 def orders(request):
- op = OrderPlaced.objects.filter(user=request.user)
- totalitems=0
- for i in Cart.objects.filter(user=request.user):
-  totalitems+=i.quantity
- return render(request, 'app/orders.html',{'orderplaced':op,'totalitem':totalitems})
+ orders = OrderPlaced.objects.filter(user=request.user)
+
+#  print("refreshed")
+ return render(request, 'app/orders.html',{'orderplaced':orders})
 
 
 
@@ -497,7 +550,7 @@ def payment_done(request):
        return redirect('/esewa-request')
       
     elif payment == 'khalti':
-        return render(request, "app/khaltirequest.html",{'total':c.total_cost} ) 
+        return redirect('/khalti-request' )
     #    return redirect('/khalti-request')
     c.delete()
   return redirect("orders") 
@@ -628,53 +681,127 @@ class CustomerRegistrationView(View):
         user = form.save(commit=False)
         user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
         user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
+        user = form.save()
+        user.is_active =False
         user.save()
-        messages.success(request, 'Congratulations!! Successfully Registered')
-        return redirect('/accounts/login/')  # Redirect to a success page or some other view
+        messages.success(request, "Account created successfully! An OTP was sent to your Email")
+        return redirect("verify-email", username=request.POST['username'])
     return render(request, 'app/customerregistration.html', {'form': form})
+ 
 
-# seller dashbord
-
-# class SellerRegistrationView(View):
-#   def get(self, request):
-#         form = SellerRegistrationForm()
-#         return render(request, 'app/seller/sellerregistration.html', {'form': form})
-  
-#   def post(self, request):
-#     form = SellerRegistrationForm(request.POST, request.FILES)
-#     if form.is_valid():
-#         user = form.save(commit=False)
-#         user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
-#         user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
-#         user.save()
-#         messages.success(request, 'Congratulations!! Successfully Registered')
-#         return redirect('/login')  # Redirect to a success page or some other view
-#     return render(request, 'app/seller/sellerregistration.html', {'form': form})
-
-
-# class SellerLoginView(View):
-#     def get(self, request):
-#         form = LoginForm()
-#         return render(request, 'app/login.html', {'form': form})
-
-#     def post(self, request):
-#         form = SellerLoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             password = form.cleaned_data['password']
+def verify_email(request, username):
+    user = User.objects.get(username=username)
+    user_otp = OtpToken.objects.filter(user=user).last()
+    
+    
+    if request.method == 'POST':
+        # valid token
+        if user_otp.otp_code == request.POST['otp_code']:
             
-#             try:
-#                 seller = Seller.objects.get(email=email)
-#                 if seller.check_password(password):
-#                     # Simulating login by adding seller's id to session (replace with actual login logic)
-#                     request.session['seller_id'] = seller.id
-#                     messages.success(request, 'Successfully logged in')
-#                     return redirect('sellerdashboard')
-#                 else:
-#                     form.add_error(None, 'Invalid email or password')
-#             except Seller.DoesNotExist:
-#                 form.add_error(None, 'Invalid email or password')
-#         return render(request,'app/seller/sellerlogin.html', {'form': form})
+            # checking for expired token
+            if user_otp.otp_expires_at > timezone.now():
+                user.is_active=True
+                user.save()
+                messages.success(request, "Account activated successfully!! You can Login.")
+                return redirect("login_view")
+            
+            # expired token
+            else:
+                messages.warning(request, "The OTP has expired, get a new OTP!")
+                return redirect("verify-email", username=user.username)
+        
+        
+        # invalid otp code
+        else:
+            messages.warning(request, "Invalid OTP entered, enter a valid OTP!")
+            return redirect("verify-email", username=user.username)
+        
+    context = {}
+    return render(request, "app/verify_token.html", context)
+
+
+
+
+def resend_otp(request):
+    if request.method == 'POST':
+        user_email = request.POST["otp_email"]
+        
+        if User.objects.filter(email=user_email).exists():
+            user = User.objects.get(email=user_email)
+            otp = OtpToken.objects.create(user=user, otp_expires_at=timezone.now() + timezone.timedelta(minutes=5))
+            # email variables
+            subject="Email Verification"
+            message = f"""
+                                Hi {user.username}, here is your OTP {otp.otp_code} 
+                                it expires in 5 minute, use the url below to redirect back to the website
+                                http://127.0.0.1:8000/verify-email/{user.username}
+                                
+                                """
+            sender = "rajukarki467@gmail.com"
+            receiver = [user.email ]
+            # send email
+            send_mail(
+                    subject,
+                    message,
+                    sender,
+                    receiver,
+                    fail_silently=False,
+                )
+            messages.success(request, "A new OTP has been sent to your email-address")
+            return redirect("verify-email", username=user.username)
+
+        else:
+            messages.warning(request, "This email dosen't exist in the database")
+            return redirect("resend-otp")
+    
+    context = {}
+    return render(request, "app/resend_otp.html", context)
+    # Another way of varifying email  hhhhhhhhhhhhhhhh
+        # user = form.save(commit=False)
+        # user.phone = form.cleaned_data.get('phone')  # Ensure custom field is saved
+        # user.image = form.cleaned_data.get('image')  # Ensure custom field is saved
+
+    #     user = form.save()
+    #     user.is_active =False
+    
+    #     user.save()
+
+    #     # 
+    #     current_site = get_current_site(request)
+    #     subject = 'Account verification email'
+    #     message = render_to_string('app/email-varification.html', {
+    #        'user':user,
+    #        'domain':current_site.domain,
+    #        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+    #        'token':user_tokenizer_generate.make_token(user),
+    #     })
+
+    #     user.email_user(subject=subject , message=message)
+    #     return redirect('emailverificationsent')
+    #     # return redirect('/accounts/login/')  # Redirect to a success page or some other view
+    # return render(request, 'app/customerregistration.html', {'form': form})
+ 
+# def email_verification(request,uidb64,token):
+#    unique_id =force_str(urlsafe_base64_decode(uidb64))
+#    user=User.objects.get(pk=unique_id)
+#    if user and user_tokenizer_generate.check_token(user,token):
+#       user.is_active =True
+#       user.save()
+
+#       return redirect('emailverificationsuccess')
+#    else:
+#       return redirect('emailverificationfailed')
+
+# def email_verification_sent(request):
+#    return render(request,'app/email-varification-sent.html')
+
+# def email_verification_success(request):
+#     return redirect('login_view')
+
+# def email_verification_failed(request):
+#     return render(request,'app/email-varification-failed.html')
+# hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+
 
 @login_required
 def seller_dashboard( request):
@@ -730,83 +857,231 @@ def contactus(request):
 
 
 # admin views
-
-# class AdminLoginView(FormView):
-#     template_name = "adminpages/adminlogin.html"
-#     form_class = CustomerLoginForm
-#     success_url = reverse_lazy("ecomapp:adminhome")
-
-#     def form_valid(self, form):
-#         uname = form.cleaned_data.get("username")
-#         pword = form.cleaned_data["password"]
-#         usr = authenticate(username=uname, password=pword)
-#         if usr is not None and Admin.objects.filter(user=usr).exists():
-#             login(self.request, usr)
-#         else:
-#             return render(self.request, self.template_name, {"form": self.form_class, "error": "Invalid credentials"})
-#         return super().form_valid(form)
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import View, TemplateView, DetailView, ListView, CreateView
+from django.contrib.auth import authenticate, login
+from .forms import LoginForm, ProductForm
+from .models import Admin, OrderPlaced, Product, ORDER_STATUS
 
 
-# class AdminRequiredMixin(object):
-#     def dispatch(self, request, *args, **kwargs):
-#         if request.user.is_authenticated and Admin.objects.filter(user=request.user).exists():
-#             pass
-#         else:
-#             return redirect("/admin-login/")
-#         return super().dispatch(request, *args, **kwargs)
+
+class AdminRequiredMixin:
+    @method_decorator(login_required(login_url='/admin-login/'))
+    def dispatch(self, request, *args, **kwargs):
+        if not Admin.objects.filter(user=request.user).exists():
+            return redirect("/login/")
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['admin'] = Admin.objects.get(user=self.request.user)
+        return context
+
+@login_required
+def admin_dashboard(request):
+    admin = get_object_or_404(Admin, user=request.user)
+    products = Product.objects.filter(admin=admin)  # Assuming 'admin' is the related field in Product
+
+    context = {
+        'admin': admin,
+        'products': products
+    }
+    return render(request, 'app/adminpages/admin_dashboard.html', context)
+
+@method_decorator(login_required, name='dispatch')
+class AdminHomeView(AdminRequiredMixin, TemplateView):
+    template_name = "app/adminpages/adminhome.html"
+
+    def get_context_data(self, **kwargs):
+      pendingorders=OrderPlaced.objects.filter(status="Pending").order_by("-id")
+      admin = Admin.objects.get(user=self.request.user)
+
+      paginator = Paginator(pendingorders, 20)
+      page_number = self.request.GET.get('page')
+      print(page_number)
+      product_list = paginator.get_page(page_number)
+      context = super().get_context_data(**kwargs)
+      context= {
+         "pendingorders" : product_list,
+         'admin':admin
+         }
+
+      return context
+
+@method_decorator(login_required, name='dispatch')
+class DeliveredOrderView(AdminRequiredMixin, TemplateView):
+    template_name = "app/adminpages/deliveredorder.html"
+
+    def get_context_data(self, **kwargs):
+      pendingorders=OrderPlaced.objects.filter(status="Delivered").order_by("-id")
+      admin = Admin.objects.get(user=self.request.user)
+
+      paginator = Paginator(pendingorders, 20)
+      page_number = self.request.GET.get('page')
+      print(page_number)
+      product_list = paginator.get_page(page_number)
+      context = super().get_context_data(**kwargs)
+      context= {
+         "pendingorders" : product_list,
+         'admin':admin
+         }
+
+      return context
+    
+@method_decorator(login_required, name='dispatch')
+class CancelOrderView(AdminRequiredMixin, TemplateView):
+    template_name = "app/adminpages/cancelorder.html"
+
+    def get_context_data(self, **kwargs):
+      pendingorders=OrderPlaced.objects.filter(status="Cancel").order_by("-id")
+      admin = Admin.objects.get(user=self.request.user)
+
+      paginator = Paginator(pendingorders, 20)
+      page_number = self.request.GET.get('page')
+      print(page_number)
+      product_list = paginator.get_page(page_number)
+      context = super().get_context_data(**kwargs)
+      context= {
+         "pendingorders" : product_list,
+         'admin':admin
+         }
+
+      return context
+@method_decorator(login_required, name='dispatch')
+class AdminOrderDetailView(AdminRequiredMixin, DetailView):
+    template_name = "app/adminpages/adminorderdetail.html"
+    model = OrderPlaced
+    context_object_name = "ord_obj"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["allstatus"]= ORDER_STATUS 
+        return context
+
+@method_decorator(login_required, name='dispatch')
+class AdminOrderListView(AdminRequiredMixin, ListView):
+    template_name = "app/adminpages/adminorderlist.html"
+    queryset = OrderPlaced.objects.all().order_by("-id")
+    context_object_name = "order"
+    def get_context_data(self, **kwargs):
+        admin= Admin.objects.get(user=self.request.user)
+
+        order = OrderPlaced.objects.all().order_by("-id")
+        paginator = Paginator(order, 25)
+        page_number = self.request.GET.get('page')
+        print(page_number)
+        product_list = paginator.get_page(page_number)
+        context = super().get_context_data(**kwargs)
+        context= {
+            'order' : product_list,
+            'admin':admin
+            }
+        return context
+    
+@method_decorator(login_required, name='dispatch')
+class AdminOrderStatusChangeView(AdminRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        order_id = self.kwargs["pk"]
+        order_obj = OrderPlaced.objects.get(id=order_id)
+        new_status = request.POST.get("status")
+        order_obj.order_status = new_status
+        order_obj.save()
+        return redirect(reverse_lazy("adminorderdetail", kwargs={"pk": order_id}))
+
+@method_decorator(login_required, name='dispatch')
+class AdminProductListView(AdminRequiredMixin, ListView):
+    template_name = "app/adminpages/adminproductlist.html"
+    queryset = Product.objects.all().order_by("-id")
+    context_object_name = "products"
+
+    def get_context_data(self, **kwargs):
+        products = Product.objects.all().order_by("-id")
+        paginator = Paginator(products, 15)
+        page_number = self.request.GET.get('page')
+        print(page_number)
+        product_list = paginator.get_page(page_number)
+        context = super().get_context_data(**kwargs)
+        context= {
+            'products' : product_list,
+            }
+        return context
+    
+@method_decorator(login_required, name='dispatch')
+class AdminCustomerListView(AdminRequiredMixin, ListView):
+    template_name = "app/adminpages/admincustomerlist.html"
+    queryset = Customer.objects.all().order_by("-id")
+    context_object_name = "products"
+
+    def get_context_data(self, **kwargs):
+        product = Customer.objects.all().order_by("-id")
+        paginator = Paginator(product, 15)
+        page_number = self.request.GET.get('page')
+        print(page_number)
+        product_list = paginator.get_page(page_number)
+        context = super().get_context_data(**kwargs)
+        context= {
+            'products' : product_list,
+            }
+        return context
+
+@method_decorator(login_required, name='dispatch')
+class AdminSellerListView(AdminRequiredMixin, ListView):
+    template_name = "app/adminpages/adminsellerlist.html"
+    queryset = Seller.objects.all().order_by("-id")
+    context_object_name = "products"
+
+    def get_context_data(self, **kwargs):
+        products = Seller.objects.all().order_by("-id")
+        paginator = Paginator(products, 15)
+        page_number = self.request.GET.get('page')
+        print(page_number)
+        product_list = paginator.get_page(page_number)
+        context = super().get_context_data(**kwargs)
+        context= {
+            'products' : product_list,
+            }
+        return context
+
+@method_decorator(login_required, name='dispatch')
+class AdminAdminListView(AdminRequiredMixin, ListView):
+    template_name = "app/adminpages/adminadminlist.html"
+    queryset = Admin.objects.all().order_by("-id")
+    context_object_name = "products"
+
+    def get_context_data(self, **kwargs):
+        products = Admin.objects.all().order_by("-id")
+        paginator = Paginator(products, 15)
+        page_number = self.request.GET.get('page')
+        print(page_number)
+        product_list = paginator.get_page(page_number)
+        context = super().get_context_data(**kwargs)
+        context= {
+            'products' : product_list,
+            }
+        return context            
 
 
-# class AdminHomeView(AdminRequiredMixin, TemplateView):
-#     template_name = "adminpages/adminhome.html"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["pendingorders"] = Order.objects.filter(
-#             order_status="Order Received").order_by("-id")
-#         return context
-
-
-# class AdminOrderDetailView(AdminRequiredMixin, DetailView):
-#     template_name = "adminpages/adminorderdetail.html"
-#     model = Order
-#     context_object_name = "ord_obj"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["allstatus"] = ORDER_STATUS
-#         return context
+@login_required
+def admin_product_create(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            id = request.session.get('admin_id')
+            product = form.save(commit=False)
+            product.admin= Admin.objects.get(id= id) 
+            product.save()
+            messages.success(request, 'Product created successfully!')
+            return redirect('adminproductlist')
+    else:
+        form = ProductForm()
+    
+    return render(request, 'app/adminpages/adminproductcreate.html', {'form': form})
 
 
-# class AdminOrderListView(AdminRequiredMixin, ListView):
-#     template_name = "adminpages/adminorderlist.html"
-#     queryset = Order.objects.all().order_by("-id")
-#     context_object_name = "allorders"
-
-
-# class AdminOrderStatuChangeView(AdminRequiredMixin, View):
-#     def post(self, request, *args, **kwargs):
-#         order_id = self.kwargs["pk"]
-#         order_obj = Order.objects.get(id=order_id)
-#         new_status = request.POST.get("status")
-#         order_obj.order_status = new_status
-#         order_obj.save()
-#         return redirect(reverse_lazy("ecomapp:adminorderdetail", kwargs={"pk": order_id}))
-
-
-# class AdminProductListView(AdminRequiredMixin, ListView):
-#     template_name = "adminpages/adminproductlist.html"
-#     queryset = Product.objects.all().order_by("-id")
-#     context_object_name = "allproducts"
-
-
-# class AdminProductCreateView(AdminRequiredMixin, CreateView):
-#     template_name = "adminpages/adminproductcreate.html"
-#     form_class = ProductForm
-#     success_url = reverse_lazy("ecomapp:adminproductlist")
-
-#     def form_valid(self, form):
-#         p = form.save()
-#         images = self.request.FILES.getlist("more_images")
-#         for i in images:
-#             ProductImage.objects.create(product=p, image=i)
-#         return super().form_valid(form)
+@login_required
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product.delete()
+    messages.success(request, 'Product deleted successfully!')
+    return HttpResponseRedirect(reverse('adminproductlist'))

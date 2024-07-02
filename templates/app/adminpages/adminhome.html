@@ -6,7 +6,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h3>Pending Orders</h3>
+            <h3 style="color: white; text-align: center; background-color: #3a4ad9; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Pending Orders</h3>
             <table class="table">
                 <thead>
                     <tr>
@@ -15,16 +15,24 @@
                         <th>Customer</th>
                         <th>Ordered On</th>
                         <th>Amount</th>
+                        <th>Address</th>
+                        <th>Quantity</th>
+                        <th>Mobile No.</th>
+                        <th>Payment Method</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in pendingorders %}
                     <tr>
                         <td>{{forloop.counter}}</td>
-                        <td><a href="{% url 'app:adminorderdetail' order.id %}">#ORDER_{{order.id}}</a></td>
-                        <td>{{order.ordered_by}}</td>
-                        <td>{{order.created_at}}</td>
+                        <td><a href="{% url 'adminorderdetail' order.id %}">#ORDER_{{order.id}}</a></td>
+                        <td>{{order.user}}</td>
+                        <td>{{order.ordered_date}}</td>
                         <td>{{order.total}}</td>
+                        <td>{{order.address}}</td>
+                        <td>{{order.quantity}}</td>
+                        <td>{{order.mobile}}</td>
+                        <td>{{order.payment_method}}</td>
 
                     </tr>
                     {% endfor %}
@@ -33,4 +41,39 @@
         </div>
     </div>
 </div>
+<div class="container">
+    <nav aria-label="...">
+      <ul class="pagination">
+          {% if pendingorders.has_previous %}
+          <li class="page-item">
+              <a class="page-link" href="?page={{ pendingorders.previous_page_number }}">Previous</a>
+            </li>
+          {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+          </li>
+          {% endif %}
+  
+          {% for i in pendingorders.paginator.page_range %}
+          {% if i == pendingorders.number %}
+          <li class="page-item active"><a class="page-link">{{i}}</a></li>
+          {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+          {% endif %}
+          {% endfor %}
+  
+          {% if pendingorders.has_next %}
+          <li class="page-item">
+              <a class="page-link" href="?page={{ pendingorders.next_page_number }}">Next</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+          </li>
+          {% endif %}
+      </ul>
+    </nav>
+  
+</div>
+  
 {% endblock %}

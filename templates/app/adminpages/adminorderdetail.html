@@ -1,5 +1,4 @@
-{% extends 'adminpages/adminbase.html' %}
-{% load humanize %}
+{% extends 'app/adminpages/adminbase.html' %}
 
 {% block title %}Order Detail{% endblock  %}
 
@@ -7,15 +6,15 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8 mx-auto">
-            <h3>Order Detail</h3>
+            <h3 style="color: white; text-align: center; background-color: #3a4ad9; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Order Detail</h3>
             <hr>
             <p><span class="font-weight-bold">Order ID: </span> #ORDER_{{ord_obj.id}}</p>
-            <p><span class="font-weight-bold">Order Status: </span> {{ord_obj.order_status}}</p>
-            <p><span class="font-weight-bold">Order On: </span> {{ord_obj.created_at}}({{ord_obj.created_at|timesince}} ago)</p>
-            <p><span class="font-weight-bold">Customer Information: </span> By {{ord_obj.ordered_by}}, {{ord_obj.mobile}}</p>
-            <p><span class="font-weight-bold">Shipping Address: </span> By {{ord_obj.shipping_address}} ({{ord_obj.email}})</p>
+            <p><span class="font-weight-bold">Order Status: </span> {{ord_obj.status}}</p>
+            <p><span class="font-weight-bold">Order On: </span> {{ord_obj.ordered_date}}</p>
+            <p><span class="font-weight-bold">Customer Information: </span> By {{ord_obj.user}}, {{ord_obj.mobile}}</p>
+            <p><span class="font-weight-bold">Shipping Address: </span> By {{ord_obj.address}} ,({{ord_obj.email}})</p>
             <p><span class="font-weight-bold">Payment Information: </span>  Using {{ord_obj.payment_method}} ({% if ord_obj.payment_completed %}Payment Completed{% else %}Not Paid{% endif %})</p>
-            <h4>Ordered Items</h4>
+            <h4 style="color: white; text-align: center; background-color: #3a4ad9; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Ordered Items</h4>
             <table class="table">
                 <thead>
                     <tr>
@@ -27,11 +26,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for cp in ord_obj.cart.cartproduct_set.all %}
+                    {% for cp in ord_obj.cart.cart_product_set.all %}
                     <tr>
                         <td>{{forloop.counter}}</td>
                         <td><a target="_blank"
-                                href="{% url 'app:productdetail' cp.product.slug %}">{{cp.product.title}}({{cp.product.id}})</a>
+                                href="{% url 'productdetail' cp.product.slug %}">{{cp.product.title}}({{cp.product.id}})</a>
                         </td>
                         <td>{{cp.rate}}</td>
                         <td>{{cp.quantity}}</td>
@@ -40,11 +39,11 @@
                     {% endfor %}
                     <tr>
                         <th colspan="4" class="text-right">Total: </th>
-                        <th>Rs {{ord_obj.total|intcomma}}/-</th>
+                        <th>Rs {{ord_obj.total}}/-</th>
                     </tr>
                 </tbody>
             </table>
-            <form action="{% url 'app:adminorderstatuschange' ord_obj.id %}" method="POST">
+            <form action="{% url 'adminorderstatuschange' ord_obj.id %}" method="POST">
                 {% csrf_token %}
                 <select name="status">
                     {% for i, j in allstatus %}

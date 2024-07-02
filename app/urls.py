@@ -11,10 +11,8 @@ urlpatterns = [
     path('product-detail/<int:pk>',  views.ProductDetailView.as_view(), name='product-detail'),
     path('buy/', views.buy_now, name='buynow'),
     path('search/', views.search_view,name='search'),
-    path('newproductdetail/<int:pk>/', views.newproductdetail, name='newproductdetail'),
     path('about/',views.aboutus,name='about'),
     path('contactus/',views.contactus,name='contactus'),
-
 
     # cart urls
     path('cart/',views.show_cart, name='showcart'),
@@ -25,7 +23,6 @@ urlpatterns = [
     
     
     path('profile/', views.ProfileView.as_view(), name='profile'),
-    path('address/', views.address, name='address'),
     path('orders/', views.orders, name='orders'),
     
     # product category url
@@ -41,6 +38,12 @@ urlpatterns = [
 
     #   registration,login and authentication url
     path('registration/', views.CustomerRegistrationView.as_view(), name='customerregistration'),
+    # email varification
+    # path('email-varification/<str:uidb64>/<str:token>',views.email_verification,name='email-verification'),
+    # path('email-varification-sent/',views.email_verification_sent,name='emailverificationsent'),
+    # path('email-varification-success/',views.email_verification_success,name='emailverificationsuccess'),
+    # path('email-varification-failed/',views.email_verification_failed,name='emailverificationfailed'),
+
     path('login/', views.login_view, name='login_view'),
     path('accounts/login/',auth_views.LoginView.as_view(template_name='app/login.html',authentication_form=LoginForm,next_page='home'),name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
@@ -61,31 +64,39 @@ urlpatterns = [
    path('paymentdone/', views.payment_done ,name='paymentdone'),
 
  # seller urls
-  # path('accounts/seller/login/',views.SellerLoginView.as_view(),name='sellerlogin'),
-  # path('seller/dashboard/', views.sellerdashboard, name='seller_dashboard'),
-  # path('seller/registration/', views.SellerRegistrationView.as_view(), name='sellerregistration'),
+
   path('sellerdashboard/', views.seller_dashboard, name='sellerdashboard'),
   path('add-product/', views.add_product, name='add_product'),
   path('sellerhome/', views.sellerhome, name='sellerhome'),
   path('sellerprofile/', views.sellerprofile, name='sellerprofile'),
-  # path('join_now/',views.joinnow,name='joinnow'),
+
 
   # admin 
-    # path("admin-login/", views.AdminLoginView.as_view(), name="adminlogin"),
-    # path("admin-home/", views.AdminHomeView.as_view(), name="adminhome"),
-    # path("admin-order/<int:pk>/", views.AdminOrderDetailView.as_view(),
-    #      name="adminorderdetail"),
 
-    # path("admin-all-orders/", views.AdminOrderListView.as_view(), name="adminorderlist"),
+    # path('admin-login/',views. AdminLoginView.as_view(), name='adminlogin'),
+    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-home/', views.AdminHomeView.as_view(), name='adminhome'),
+    path('deliveredorder/', views.DeliveredOrderView.as_view(), name='deliveredorder'),
+    path('cancelorder/', views.CancelOrderView.as_view(), name='cancelorder'),
+    path('admin-order/<int:pk>/',views. AdminOrderDetailView.as_view(), name='adminorderdetail'),
+    path('admin-orders/', views.AdminOrderListView.as_view(), name='adminorderlist'),
+    path('adminorderstatuschange/<int:pk>/',views. AdminOrderStatusChangeView.as_view(), name='adminorderstatuschange'),
+    path('admin-products/', views.AdminProductListView.as_view(), name='adminproductlist'),
+    path('admin-customer/', views.AdminCustomerListView.as_view(), name='admincustomerlist'),
+    path('admin-seller/', views.AdminSellerListView.as_view(), name='adminsellerlist'),
+    path('admin-admin/', views.AdminAdminListView.as_view(), name='adminadminlist'),
+    # path('admin-product-create/',views.AdminProductCreateView.as_view(), name='adminproductcreate'),
+    path('admin-product-create/', views.admin_product_create, name='adminproductcreate'),
+    path('admin/product/delete/<int:product_id>/', views.delete_product, name='delete_product'),
+    
 
-    # path("admin-order-<int:pk>-change/",
-    #      views.AdminOrderStatuChangeView.as_view(), name="adminorderstatuschange"),
 
-    # path("admin-product/list/", views.AdminProductListView.as_view(),
-    #      name="adminproductlist"),
-    # path("admin-product/add/", views.AdminProductCreateView.as_view(),
-    #      name="adminproductcreate"),
+    path("verify-email/<slug:username>", views.verify_email, name="verify-email"),
+    path("resend-otp/", views.resend_otp, name="resend-otp"),
+    
 
 
+
+    
 ]+ static(settings.MEDIA_URL , document_root=settings.MEDIA_ROOT)
 
