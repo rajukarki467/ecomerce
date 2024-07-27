@@ -13,11 +13,16 @@ urlpatterns = [
     path('search/', views.search_view,name='search'),
     path('about/',views.aboutus,name='about'),
     path('contactus/',views.contactus,name='contactus'),
+    path('chat/',views.chat,name='chat'),
+
+
+    path('recommendation/',views.recommendations_view,name='recommendation'),
+    path('check_stock/<int:product_id>/', views.check_stock, name='check_stock'),
 
     # cart urls
     path('cart/',views.show_cart, name='showcart'),
-    path('pluscart/',views.plus_cart),
-    path('minuscart/',views.minus_cart),
+    path('pluscart/',views.plus_cart ,name='plus_cart'),
+    path('minuscart/',views.minus_cart, name='minus_cart'),
     path('removecart/',views.remove_cart,name='removecart'),
     path('add-to-cart/', views.add_to_cart, name='add-to-cart'),
     
@@ -34,7 +39,7 @@ urlpatterns = [
     path('mancloth/<slug:data>', views.mancloth, name='manclothdata'),
     path('womancloth/', views.womancloth, name='womancloth'),
     path('womancloth/<slug:data>', views.womancloth, name='womanclothdata'),
-    path('category/', views.category.as_view(), name='category'),
+    path('category/', views.CategoryView.as_view(), name='category'),
 
     #   registration,login and authentication url
     path('registration/', views.CustomerRegistrationView.as_view(), name='customerregistration'),
@@ -56,7 +61,7 @@ urlpatterns = [
     
     
 # payment urls
-   path('khalti-request/<str:id>', views.KhaltiRequestView.as_view(), name='khalti_request'),
+   path('khalti-request/', views.KhaltiRequestView.as_view(), name='khalti_request'),
    path('khalti-verify/', views.KhaltiVerifyView.as_view(), name='khalti_verify'),
    path('esewa-request/',views.EsewaRequestView.as_view(), name='esewa_request'),
    path('esewa-verify/',views.EsewaVerifyView.as_view(), name='esewa_verify'),
@@ -95,7 +100,11 @@ urlpatterns = [
     path("resend-otp/", views.resend_otp, name="resend-otp"),
     
 
-
+   #recommendations from traim data and model
+  #  path('recommend/<int:item_id>/', views.recommendationss_view, name='recommend'),
+    path('chatbot/', views.chatbot_response, name='chatbot_response'),
+    path('customer-info/', views.customer_info, name='customer_info'),
+        
 
     
 ]+ static(settings.MEDIA_URL , document_root=settings.MEDIA_ROOT)

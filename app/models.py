@@ -3,6 +3,7 @@ import secrets
 from django.db import models
 from django.contrib.auth.models import User 
 from django.core.validators import MaxValueValidator,MinValueValidator
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from app.validators import validate_mobile_number
@@ -99,7 +100,6 @@ CITY_CHOICE = (
 
 class Customer(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
     locality = models.CharField(max_length=100)
     city = models.CharField(choices=CITY_CHOICE ,max_length=50)
     state = models.CharField(choices=STATE_CHOICE ,max_length=50)
@@ -142,6 +142,27 @@ CATEGORY_CHOICES =   (
     ('C','cosmetic product'),
 )
 
+CATEGORY_MAP = {
+    'mens clothes': 'M',
+    'men clothes': 'M',
+    'men clothes': 'M',
+    'men':'M',
+    'womans clothes': 'W',
+    'women clothes': 'W',
+    'woman clothes': 'W',
+    'woman':'W',
+    'shoes': 'S',
+    'footwear': 'S',
+    'sneakers': 'S',
+    'cosmetic product': 'C',
+    'cosmetic': 'C',
+    'makeup': 'C',
+    'beauty product': 'C',
+    'makeup product': 'C',
+    'beauty': 'C',
+}
+
+
 class Product(models.Model):
     seller = models.ForeignKey(User,on_delete=models.CASCADE)
     admin = models.ForeignKey(Admin,on_delete=models.CASCADE,null=True, blank=True)
@@ -154,13 +175,18 @@ class Product(models.Model):
     product_image = models.ImageField(upload_to='prductimg')
     quantity = models.PositiveIntegerField(verbose_name="Quantity",null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True) 
-    
+    average_rating = models.FloatField(default=0)  # New field for average rating
+    stock_status = models.CharField(max_length=20, default='In Stock')  # New field for stock status
                              
     def __str__(self):
      return str(self.id)
     
+
     def __str__(self):
       return self.title
+    
+    def get_absolute_url(self):
+        return reverse('product-detail', kwargs={'pk': self.pk})
 
 class LatestProduct(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -170,7 +196,7 @@ class LatestProduct(models.Model):
 
     @staticmethod
     def get_latest_products():
-        return Product.objects.all().order_by('-created_at')
+        return Product.objects.filter(quantity__gt=0).order_by('-created_at')
 
 
 class Cart(models.Model):
@@ -245,3 +271,23 @@ class OtpToken(models.Model):
     
     def __str__(self):
         return self.user.username
+
+
+class ProductInteraction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    interaction_type = models.CharField(max_length=50)  # e.g.,  "view", "click"
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user} {self.interaction_type} {self.product}'
+
+
+
+class SearchHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    query = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.query} - {self.timestamp}'

@@ -1,0 +1,178 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock title %}
+
+{% block main-content %}
+<style>
+    .thumbnail {
+        border-radius: 1rem;
+    }
+    .card {
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<div class="container">
+    <h2 class="page_heading" style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350; padding: 0.5rem;">Recommended Products</h2>
+    
+    {% if recommended_products %}
+    <div class="row" id="recommended-products-container">
+        {% for product in recommended_products %}
+        <div class="col-md-4 mb-4">
+            <div class="card border-light h-100">
+                <div class="card-body text-center">
+                    <a href="{% url 'product-detail' product.id %}" class="btn btn-link text-decoration-none">
+                        <div class="item">
+                            <h5 class="fw-bold text-uppercase">{{ product.name }}</h5>
+                            <img class="thumbnail img-fluid" src="{{ product.image_url }}" alt="{{ product.name }}" style="height: 150px; width: 150px;">
+                            <div class="mt-3">
+                                <span class="fw-bold">{{ product.title }}</span><br>
+                                <span class="fs-5">Rs. {{ product.discounted_price }}</span><br>
+                                <div class="star-rating mt-2">
+                                    {% for i in "12345" %}
+                                        {% if product.average_rating >= i|add:"0" %}
+                                            <span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span>
+                                        {% else %}
+                                            <span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <p class="card-text">
+                        {% if product.stock_status == 'In Stock' %}
+                            <span class="text-success">{{ product.stock_status }}</span>
+                        {% elif product.stock_status == 'Limited Stock' %}
+                            <span class="text-warning">{{ product.stock_status }}</span>
+                        {% else %}
+                            <span class="text-danger">{{ product.stock_status }}</span>
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-between mt-3">
+                        <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
+                        <a href="{% url 'product-detail' product.id %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76);">More Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <h2>No recommended products available.</h2>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productElements = document.querySelectorAll('.card-body');
+
+    productElements.forEach(function(productElement) {
+        productElement.addEventListener('click', function() {
+            const productId = productElement.dataset.productId;
+            logInteraction('click', productId);
+        });
+    });
+});
+
+function logInteraction(interactionType, productId) {
+    fetch('/log-interaction/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ interaction_type: interactionType, product_id: productId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.recommended_products) {
+            updateRecommendedProducts(data.recommended_products);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function updateRecommendedProducts(products) {
+    const container = document.getElementById('recommended-products-container');
+    container.innerHTML = '';
+
+    products.forEach(product => {
+        const productHTML = `
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center" data-product-id="${product.id}">
+                        <a href="/product-detail/${product.id}" class="btn btn-link"></a>
+                        <div class="item">
+                            <h5 class="fw-bold text-uppercase">${product.name}</h5>
+                            <img class="thumbnail img-fluid" src="${product.image_url}" alt="${product.name}">
+                            <div class="mt-3">
+                                <span class="fw-bold">${product.title}</span><br>
+                                <span class="fs-5">Rs. ${product.discounted_price}</span><br>
+                                <div class="star-rating mt-2">
+                                    ${generateStarRating(product.average_rating)}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="card-text mt-3">
+                            ${getStockStatusHTML(product.stock_status)}
+                        </p>
+                        <div class="mt-3">
+                            <i class="fa fa-shopping-cart me-3" style="color: gray; cursor: pointer;"></i>
+                            <a href="/product-detail/${product.id}" class="btn btn-primary" style="background-color: rgb(181, 76, 76);">More Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', productHTML);
+    });
+}
+
+function generateStarRating(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (rating >= i) {
+            stars += '<span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span>';
+        } else {
+            stars += '<span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span>';
+        }
+    }
+    return stars;
+}
+
+function getStockStatusHTML(stockStatus) {
+    let stockStatusHTML = '';
+    switch (stockStatus) {
+        case 'In Stock':
+            stockStatusHTML = `<span class="text-success">${stockStatus}</span>`;
+            break;
+        case 'Limited Stock':
+            stockStatusHTML = `<span class="text-warning">${stockStatus}</span>`;
+            break;
+        default:
+            stockStatusHTML = `<span class="text-danger">${stockStatus}</span>`;
+            break;
+    }
+    return stockStatusHTML;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock main-content %}

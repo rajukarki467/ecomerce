@@ -98,10 +98,10 @@
         display: inline-block; /* Ensures the image behaves like inline content */
       }
 
-      .mr-2{
+     .mr-2{
         border-radius: 1rem;
       }
-
+ 
       html, body {
         height: 100%;
         margin: 0;
@@ -110,7 +110,6 @@
       .wrapper {
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
       }
 
       .content {
@@ -152,11 +151,17 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'contactus' %}">Contact Us</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'chat' %}">Chat with Us</a>
+            </li>
           </ul>
           <form class="d-flex ml-auto" action="{% url 'search' %}" method="GET">
-            <input class="form-control me-2" type="text" name="q" value="{{request.GET.q}}" placeholder="Search" aria-label="Search"/>
+            <input class="form-control me-2" type="text" name="q" id="search-input" value="{{ query }}" placeholder="Search" aria-label="Search"
+              list="category-suggestions" autocomplete="off" />
+            <datalist id="category-suggestions"></datalist>
             <button class="btn btn-search" type="submit">Search</button>
           </form>
+        
           <div>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               {% if request.user.is_authenticated %}
@@ -210,6 +215,8 @@
         </div>
       </div>
     </nav>
+   <!-- Add this button somewhere on your page to open the chat -->
+   
 
     {% block banner_slider %} {% endblock banner_slider %}
     {% block livesale %} {% endblock livesale %}
@@ -238,6 +245,71 @@
       </footer>
     </div>
 
+  </body>
+<script>
+  // JavaScript for displaying category mappings based on user input
+  const CATEGORY_MAP = {
+    'mens clothes': 'M',
+    'men clothes': 'M',
+    'women clothes': 'W',
+    'woman clothes': 'W',
+    'shoes': 'S',
+    'footwear': 'S',
+    'sneakers': 'S',
+    'cosmetic product': 'C',
+    'cosmetic': 'C',
+    'makeup': 'C',
+    'beauty product': 'C',
+    'makeup product': 'C',
+    'beauty': 'C',
+  };
+
+  const searchInput = document.getElementById('search-input');
+  const categorySuggestions = document.getElementById('category-suggestions');
+  const searchForm = document.getElementById('search-form');
+
+  // Event listener for input changes
+  searchInput.addEventListener('input', function() {
+    const userInput = searchInput.value.toLowerCase().trim();
+    categorySuggestions.innerHTML = ''; // Clear previous suggestions
+
+    // Generate and display suggestions based on user input
+    if (userInput.length > 0) {
+      const suggestions = Object.keys(CATEGORY_MAP).filter(key =>
+        key.toLowerCase().includes(userInput)
+      );
+
+      if (suggestions.length > 0) {
+        suggestions.forEach(suggestion => {
+          const option = document.createElement('option');
+          option.value = suggestion;
+          categorySuggestions.appendChild(option);
+        });
+      }
+    }
+  });
+
+  // Event listener for selecting a suggestion from the datalist
+  searchInput.addEventListener('change', function() {
+    const selectedSuggestion = searchInput.value.toLowerCase().trim();
+    if (selectedSuggestion in CATEGORY_MAP) {
+      const suggestedQuery = selectedSuggestion;
+      const messageContainer = document.createElement('div');
+      messageContainer.classList.add('alert', 'alert-info');
+      messageContainer.textContent = `Did you mean to search for "${suggestedQuery}"?`;
+      searchForm.insertBefore(messageContainer, searchInput.nextSibling);
+
+      // Automatically submit the form when user selects a suggestion and presses Tab, Space, or Enter
+      searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Tab' || event.key === ' ' || event.key === 'Enter') {
+          searchForm.submit();
+        }
+      });
+    }
+  });
+
+</script>
+
     <!-- Jquery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <!-- Bootstrap Bundle with Popper -->
@@ -246,5 +318,6 @@
     <script src="{% static 'app/js/owl.carousel.min.js' %}"></script>
     <script src="{% static 'app/js/all.min.js' %}"></script>
     <script src="{% static 'app/js/myscript.js' %}"></script>
-  </body>
+    <script src="{% static 'app/js/stock.js' %}"></script>
+  
 </html>

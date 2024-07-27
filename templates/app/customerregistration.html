@@ -20,6 +20,7 @@
    <hr>
 
    <form action="" method="post"  enctype="multipart/form-data" novalidate class="shadow p-5">
+    {% csrf_token %}
       {% if messages %} 
       {% for message in messages %} 
       <p {% if message.tags %} class="alert alert-{{message.tags}} mb-5" {% endif %}>{{message }}</p>

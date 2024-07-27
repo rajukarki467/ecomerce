@@ -3,82 +3,126 @@
 {% block title %}Cart{% endblock title %}
 {% block main-content %}
 <style>
-
-.thumbnail{
-  border-radius: 1rem;
-}
-.card {
-  border-radius: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
-}
+    .thumbnail {
+        border-radius: 1rem;
+    }
+    .card {
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    .status-message {
+        margin-top: 10px;
+    }
+    .status-error {
+        color: red;
+    }
+    .status-warning {
+        color: orange;
+    }
+    .status-success {
+        color: green;
+    }
 </style>
 <div class="container my-5">
-  <div class="row">
-    <h1 class="text-center text-white mb-5" style="background-color: #343a40;">Shopping Cart</h1>
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="text-center text-white" style="background-color: #343a40;">Cart</h3>
-          {% for cart in carts %}
-          <hr>
-          <div class="row">
-            <div class="col-sm-6 text-center align-self-center">
-              <img src="{{cart.product.product_image.url }}" alt="{{cart.product.title}}" class="card thumbnail img-fluid img-thumbnail shadow-sm" height="150px" width="150px">
+    <div class="row">
+        <h1 class="text-center text-white mb-5" style="background-color: #343a40;">Shopping Cart</h1>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-center text-white" style="background-color: #343a40;">Cart</h3>
+                    {% for status in cart_status %}
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-6 text-center align-self-center">
+                            <img src="{{status.item.product.product_image.url}}" alt="{{status.item.product.title}}" class="card thumbnail img-fluid img-thumbnail shadow-sm" height="150px" width="150px">
+                        </div>
+                        <div class="col-sm-6 d-flex flex-column justify-content-center">
+                            <h5 class="text-center">{{status.item.product.title}}</h5>
+                            <p class="mb-2 text-muted small text-center">{{status.item.product.description}}</p>
+                            <div id="status-message-{{status.item.product.id}}" class="status-message text-center status-{{status.status_type}}">
+                                {{ status.status_message }}
+                            </div>
+                            <div class="my-3 d-flex align-items-center justify-content-center">
+                                <label for="quantity" class="mr-2">Quantity:</label>
+                                <a class="minus-cart btn" pid="{{status.item.product.id}}"><i class="fas fa-minus-square fa-lg"></i></a>
+                                <span id="quantity-{{status.item.product.id}}" class="mx-2">{{status.item.quantity}}</span>
+                                <a class="plus-cart btn" pid="{{status.item.product.id}}"><i class="fas fa-plus-square fa-lg"></i></a>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <a href="#" class="remove-cart btn btn-sm" pid="{{status.item.product.id}}" style="background-color: rgb(181, 76, 76);">Remove item</a>
+                            </div>
+                            <br>
+                            <hr>
+                            <div class="d-flex justify-content-center">
+                                <p class="mb-0"><strong>Rs. {{status.item.product.discounted_price}}</strong></p>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <hr class="text-muted">
+                </div>
             </div>
-            <div class="col-sm-6 d-flex flex-column justify-content-center">
-              <h5 class="text-center">{{cart.product.title}}</h5>
-              <p class="mb-2 text-muted small text-center">{{cart.product.description}}</p>
-              <div class="my-3 d-flex align-items-center justify-content-center">
-                <label for="quantity" class="mr-2">Quantity:</label>
-                <a class="minus-cart btn" pid="{{cart.product.id}}"><i class="fas fa-minus-square fa-lg"></i></a>
-                <span id="quantity" class="mx-2">{{cart.quantity}}</span>
-                <a class="plus-cart btn" pid="{{cart.product.id}}"><i class="fas fa-plus-square fa-lg"></i></a>
-              </div>
-              <div class="d-flex justify-content-center">
-                <a href="#"  class="remove-cart btn  btn-sm" pid="{{cart.product.id}}"  style="background-color: rgb(181, 76, 76);">Remove item</a>
-              </div>
-              <br>
-              <hr>
-              <div class="d-flex justify-content-center">
-                <p class="mb-0"><strong>Rs. {{cart.product.discounted_price}}</strong></p>
-              </div>
-              <hr>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="page_heading text-center text-white py-2 mb-4" style="border-radius: 8px; background-color: #343a40;">Total Amount</h2>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
+                            Amount
+                            <span>Rs. <span id="amount">{{amount}}</span></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            Shipping
+                            <span>Rs. 70.00</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
+                            <div>
+                                <strong>Total</strong>
+                                <small>(including VAT)</small>
+                            </div>
+                            <span><strong>Rs. <span id="totalamount">{{totalamount}}</span></strong></span>
+                        </li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{% url 'checkout' %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76); color: white;">Order</a>
+                    </div>
+                </div>
             </div>
-          </div>
-          {% endfor %}
-          <hr class="text-muted">
         </div>
-      </div>
     </div>
-
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-body">
-          <h2 class="page_heading text-center text-white  py-2 mb-4" style="border-radius: 8px; background-color: #343a40;">Total Amount</h2>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
-              Amount
-              <span>Rs. <span id="amount">{{amount}}</span></span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-              Shipping
-              <span>Rs. 70.00</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
-              <div>
-                <strong>Total</strong>
-                <small>(including VAT)</small>
-              </div>
-              <span><strong>Rs. <span id="totalamount">{{totalamount}}</span></strong></span>
-            </li>
-          </ul>
-          <div class="d-grid">
-            <a href="{% url 'checkout' %}" class="btn btn-primary" style="background-color: rgb(181, 76, 76); color: white;">Order</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      function updateCart(pid, increment) {
+          let url = increment ? '{% url "plus_cart" %}' : '{% url "minus_cart" %}';
+          fetch(`${url}?prod_id=${pid}`)
+              .then(response => response.json())
+              .then(data => {
+                  document.getElementById(`quantity-${data.product_id}`).innerText = data.quantity;
+                  document.getElementById('amount').innerText = data.amount;
+                  document.getElementById('totalamount').innerText = data.totalamount;
+
+                  let statusMessageElem = document.getElementById(`status-message-${data.product_id}`);
+                  statusMessageElem.innerText = data.status_message;
+                  statusMessageElem.className = 'status-message text-center status-' + data.status_type;
+              });
+      }
+
+      document.querySelectorAll('.plus-cart').forEach(button => {
+          button.addEventListener('click', function () {
+              let pid = this.getAttribute('pid');
+              updateCart(pid, true);
+          });
+      });
+
+      document.querySelectorAll('.minus-cart').forEach(button => {
+          button.addEventListener('click', function () {
+              let pid = this.getAttribute('pid');
+              updateCart(pid, false);
+          });
+      });
+  });
+</script>
 {% endblock main-content %}

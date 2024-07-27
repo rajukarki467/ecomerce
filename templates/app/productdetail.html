@@ -1,36 +1,74 @@
 {% extends 'app/base.html' %}
 {% load static %}
+{% load custom_filters %}
 {% block title %}Product Detail{% endblock title %}
-
 {% block main-content %}
 <style>
-
-.thumbnail{
-  border-radius: 1rem;
-}
-.card {
-  border-radius: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
+  .thumbnail {
+    border-radius: 1rem;
+  }
+  .card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+  .star-rating {
+    display: flex;
+    direction: row-reverse;
+    justify-content: center;
+  }
+  .star-rating input {
+    display: none;
+  }
+  .star-rating label {
+    float: left; /* Arrange labels horizontally */
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+  }
+  .star-rating input:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label {
+    color: #f5b301;
+  }
 </style>
+
 <div class="container my-5">
   <div class="card" style="border: 1px solid #ededed;">
   <div class="row ">
       <div class="col-sm-6  card-body  text-center align-self-center " >
-        <a href="{% url 'product-detail' product.id %}" class="btn btn-link">
+        <a href="{% url 'product-detail' product.id %}" class="btn btn-link"> </a>
           <div class="item">
             <img class="thumbnail" src="{{ product.product_image.url }}" alt="{{ product.name }}"
               height="300px" width="300px" style="border-radius: 1rem;box-shadow: #f17981;">
           </div>
-        </a>
+          <p class="star-rating mb-0 me-3" style="font-size: 36px;"> <!-- Adjust font-size as needed -->
+            <div class="rating-stars">
+              {% for i in "12345" %}
+                {% if product.average_rating >= i|add:"0" %}
+                  <span class="star-icon" style="font-size: 36px; color: #f5b301;">&#9733;</span> <!-- Filled star -->
+                {% else %}
+                  <span class="star-icon" style="font-size: 36px; color: #ddd;">&#9734;</span> <!-- Empty star -->
+                {% endif %}
+              {% endfor %}
+            </div>
+          </p>
+        
+          <p class="card-text">
+            {% if product.stock_status == 'In Stock' %}
+              <span class="text-success" style="font-size: average;">{{ product.stock_status }}</span>
+            {% elif product.stock_status == 'Limited Stock' %}
+              <span class="text-warning" style="font-size: average;">{{ product.stock_status }}</span>
+            {% else %}
+              <span class="text-danger" style="font-size: average;">{{ product.stock_status }}</span>
+            {% endif %}
+          </p>
       </div>
       <div class="col-sm-5 offset-sm-1 ">
         <h2 class="page_heading" style=" text-align: center; ">{{ product.title}}</h2>
 
         <hr>
         <p style="text-align: center;">{{product.description}}</p> <br>
-        <h4 style="text-align: center;">Rs. {{final_price}} <br><small
+        <h4 style="text-align: center;">Rs. {{ product.discounted_price }} <br><small
             class="fw-light text-decoration-line-through" style="text-align: center;">{{product.selling_price}} </small>
         </h4> <br>
 
@@ -78,10 +116,10 @@
       <form method="post" action="/product-detail/{{ product.id }}">
         {% csrf_token %}
         <div class="rating-form mt-4">
-          <h4 class="mb-3"
-            style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">
-            Submit Your Rating:</h4>
-
+          <h4 class="mb-3" style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">
+            Submit Your Rating:
+          </h4>
+        
           {% if messages %}
           <div class="alert custom-success-alert alert-dismissible fade show" role="alert">
             {% for message in messages %}
@@ -90,54 +128,75 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
           {% endif %}
-
-          <div class="rating">
-            {% for i in "12345" %}
-            <input type="radio" name="rating" value="{{ i }}" id="rating{{ i }}">
-            <label for="rating{{ i }}">{{ i }}</label>
+        
+          <div class="star-rating">
+            {% for i in "54321" %}
+              <input type="radio" name="rating" value="{{ i }}" id="rating{{ i }}">
+              <label for="rating{{ i }}">&#9733;</label>
             {% endfor %}
           </div>
-
+          
+        
           <div class="form-group mt-3">
             <label for="review" class="mb-3 text-white" style="background-color: #343a40;">Write a Review:</label>
             <textarea class="form-control" name="review" id="review" rows="3"></textarea>
           </div>
-
-          <button type="submit" class="btn btn-primary shadow px-5 py-2"  style="background-color: rgb(181, 76, 76);">Submit Rating
+        
+          <button type="submit" class="btn btn-primary shadow px-5 py-2" style="background-color: rgb(181, 76, 76);">Submit Rating</button>
             <!-- {% if rating_exists %}Update Rating{% else %}Submit Rating{% endif %} -->
-          </button>
         </div>
       </form>
       {% else %}
-      <p>YOu already give a rating foy this product</p>
+      <p>You already give a rating foy this product</p>
       {% endif %} 
       
       <div class="row mt-4">
         <div class="col-md-6">
-          <div id="all-ratings" class="collapse show" >
-            <h4 class="text-white" style="background-color: #343a40;" >All Ratings and Reviews:</h4>
+          <div id="all-ratings" class="collapse show">
+            <h4 class="text-white" style="background-color: #343a40;">All Ratings and Reviews:</h4>
             <div class="review-cards">
               {% for rating in all_ratings %}
-              <div class="review-card mb-3">
-                <div class="rating-stars">
-                  {% for i in "12345" %}
-                  {% if rating.rating|add:"" >= i %}
-                  <span class="star-icon">&#9733;</span>
-                  {% endif %}
-                  {% endfor %}
+              <div class="review-card mb-3 {% if forloop.counter > 5 %}d-none extra-review{% endif %}">
+                <div class="review-content d-flex align-items-center">
+                  <p class="fw-bold mb-0 me-3">{{ rating.user }}</p>
+                  <p class="star-rating mb-0 me-3">
+                    <div class="rating-stars">
+                      {% for i in "12345" %}
+                        {% if rating.rating >= i|add:"0" %}
+                          <span class="star-icon" style="color: #f5b301;">&#9733;</span>
+                        {% else %}
+                          <span class="star-icon" style="color: #ddd;">&#9734;</span>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </p>
+                  <p class="mb-0 ms-4">{{ rating.review }}</p>
                 </div>
-                <div class="review-content">
-                  <p class="star-rating">{{ rating.rating }} rating</p>
-                  <p class="fw-bold">{{ rating.user }}</p>
-                  <p>{{ rating.review }}</p>
-                  <hr>
-                </div>
+                <hr>
               </div>
               {% endfor %}
             </div>
+            {% if all_ratings|length > 5 %}
+            <button id="view-more-btn" class="btn btn-primary mt-3">View More</button>
+            {% endif %}
           </div>
         </div>
       </div>
+      
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const viewMoreBtn = document.getElementById("view-more-btn");
+          if (viewMoreBtn) {
+            viewMoreBtn.addEventListener("click", function() {
+              const extraReviews = document.querySelectorAll(".extra-review");
+              extraReviews.forEach(review => review.classList.toggle("d-none"));
+              this.textContent = this.textContent === "View More" ? "View Less" : "View More";
+            });
+          }
+        });
+      </script>
+      
+
        <hr>
       <div class="container mt-5">
         <h2 class="page_heading text-center text-white py-2" style="background-color: #343a40;">Related Products</h2>
@@ -154,9 +213,30 @@
                       width="150px">
                     <div class="mt-3">
                       <span class="fw-bold">{{ product.title }}</span><br>
-                      <span class="fs-5">Rs. {{ product.discounted_price }}</span>
+                      <span class="fs-5">Rs. {{ product.discounted_price }}</span><br>
+                       <span> <p class="star-rating mb-0 me-3" style="font-size: 18px;"> <!-- Adjust font-size as needed -->
+                          <div class="rating-stars">
+                            {% for i in "12345" %}
+                              {%  if product.average_rating >= i|add:"0" %}
+                                <span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span> <!-- Filled star -->
+                              {% else %}
+                                <span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span> <!-- Empty star -->
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                         </p>
+                       </span><br> 
                     </div>
                   </div>
+                  <p class="card-text">
+                    {% if product.stock_status == 'In Stock' %}
+                      <span class="text-success" style="font-size: average;">{{ product.stock_status }}</span>
+                    {% elif product.stock_status == 'Limited Stock' %}
+                      <span class="text-warning" style="font-size: average;">{{ product.stock_status }}</span>
+                    {% else %}
+                      <span class="text-danger" style="font-size: average;">{{ product.stock_status }}</span>
+                    {% endif %}
+                  </p>
                 <div class="d-flex justify-content-between mt-3">
                   <i class="fa fa-shopping-cart text-muted" style="cursor: pointer;"></i>
                   <a href="{% url 'product-detail' product.id %}" class="btn btn-primary"
@@ -171,4 +251,5 @@
     </div>
   </div>
 </div>
+
 {% endblock main-content %}

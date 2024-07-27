@@ -28,6 +28,28 @@
         <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
       </div>
     </a>
+    <span> <p class="star-rating mb-0 me-3" style="font-size: 18px;"> <!-- Adjust font-size as needed -->
+      <div class="rating-stars">
+        {% for i in "12345" %}
+          {%  if b.average_rating >= i|add:"0" %}
+            <span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span> <!-- Filled star -->
+          {% else %}
+            <span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span> <!-- Empty star -->
+          {% endif %}
+        {% endfor %}
+      </div>
+     </p>
+    </span >
+    <p class="card-text">
+      {% if b.stock_status == 'In Stock' %}
+        <span class="text-success" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% elif b.stock_status == 'Limited Stock' %}
+        <span class="text-warning" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% else %}
+        <span class="text-danger" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% endif %}
+    </p>
+    
     <div class="d-flex justify-content-between align-items-center mt-3">
       <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
       <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(181, 76, 76);">More Details</a>
@@ -51,6 +73,28 @@
         <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
       </div>
     </a>
+    <span> <p class="star-rating mb-0 me-3" style="font-size: 18px;"> <!-- Adjust font-size as needed -->
+      <div class="rating-stars">
+        {% for i in "12345" %}
+          {%  if b.average_rating >= i|add:"0" %}
+            <span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span> <!-- Filled star -->
+          {% else %}
+            <span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span> <!-- Empty star -->
+          {% endif %}
+        {% endfor %}
+      </div>
+     </p>
+    </span >
+    <p class="card-text">
+      {% if b.stock_status == 'In Stock' %}
+        <span class="text-success" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% elif b.stock_status == 'Limited Stock' %}
+        <span class="text-warning" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% else %}
+        <span class="text-danger" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% endif %}
+    </p>
+    
     <div class="d-flex justify-content-between align-items-center mt-3">
       <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
       <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(181, 76, 76);">More Details</a>
@@ -74,6 +118,28 @@
         <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
       </div>
     </a>
+    <span> <p class="star-rating mb-0 me-3" style="font-size: 18px;"> <!-- Adjust font-size as needed -->
+      <div class="rating-stars">
+        {% for i in "12345" %}
+          {%  if b.average_rating >= i|add:"0" %}
+            <span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span> <!-- Filled star -->
+          {% else %}
+            <span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span> <!-- Empty star -->
+          {% endif %}
+        {% endfor %}
+      </div>
+     </p>
+    </span >
+    <p class="card-text">
+      {% if b.stock_status == 'In Stock' %}
+        <span class="text-success" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% elif b.stock_status == 'Limited Stock' %}
+        <span class="text-warning" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% else %}
+        <span class="text-danger" style="font-size: smaller;">{{ b.stock_status }}</span>
+      {% endif %}
+    </p>
+    
     <div class="d-flex justify-content-between align-items-center mt-3">
       <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
       <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(181, 76, 76);">More Details</a>
@@ -96,6 +162,28 @@
           <span class="fs-5 d-block">Rs. {{ b.discounted_price }}</span>
         </div>
       </a>
+      <span> <p class="star-rating mb-0 me-3" style="font-size: 18px;"> <!-- Adjust font-size as needed -->
+        <div class="rating-stars">
+          {% for i in "12345" %}
+            {%  if b.average_rating >= i|add:"0" %}
+              <span class="star-icon" style="font-size: 18px; color: #f5b301;">&#9733;</span> <!-- Filled star -->
+            {% else %}
+              <span class="star-icon" style="font-size: 18px; color: #ddd;">&#9734;</span> <!-- Empty star -->
+            {% endif %}
+          {% endfor %}
+        </div>
+       </p>
+      </span >
+      <p class="card-text">
+        {% if b.stock_status == 'In Stock' %}
+          <span class="text-success" style="font-size: smaller;">{{ b.stock_status }}</span>
+        {% elif b.stock_status == 'Limited Stock' %}
+          <span class="text-warning" style="font-size: smaller;">{{ b.stock_status }}</span>
+        {% else %}
+          <span class="text-danger" style="font-size: smaller;">{{ b.stock_status }}</span>
+        {% endif %}
+      </p>
+      
       <div class="d-flex justify-content-between align-items-center mt-3">
         <i class="fa fa-shopping-cart" style="color: gray; cursor: pointer;"></i>
         <a href="{% url 'product-detail' b.id %}" class="btn btn-primary" style="background-color:rgb(181, 76, 76);">More Details</a>

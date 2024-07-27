@@ -7,14 +7,15 @@ from .models import (
     OrderPlaced,
     Rating,
     Seller,
-    Admin
+    Admin,
+    ProductInteraction
 )
 
 # Register your models here.
 
 @admin.register(Customer)
 class CustomerModelAdmin(admin.ModelAdmin):
-    list_display = ['id','user','name','locality','city','state','phone','image']
+    list_display = ['id','user','locality','city','state','phone','image']
 
 
 @admin.register(Admin)
@@ -24,7 +25,7 @@ class AdminModelAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ['id','title','selling_price','discounted_price','description','brand','category','product_image','created_at','quantity']
+    list_display = ['id','title','selling_price','discounted_price','description','brand','category','product_image','created_at','quantity','average_rating']
 
 @admin.register(Cart)
 class CartModelAdmin(admin.ModelAdmin):
@@ -63,3 +64,21 @@ class RatingAdmin(admin.ModelAdmin):
         return queryset.select_related('user', 'product')
 
 admin.site.register(LatestProduct)
+
+
+@admin.register(ProductInteraction)
+class ProductInteractionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'interaction_type', 'timestamp')
+    list_filter = ('interaction_type', 'timestamp')
+    search_fields = ('user__username', 'product__name', 'interaction_type')
+    ordering = ('-timestamp',)
+
+# admin.site.register(ProductInteraction, ProductInteractionAdmin)
+
+from .models import SearchHistory
+
+@admin.register(SearchHistory)
+class SearchHistoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'query', 'timestamp')
+    search_fields = ('user__username', 'query')
+    list_filter = ('timestamp',)

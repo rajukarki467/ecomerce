@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recommended Products</title>
+</head>
+<body>
+    <h1>Recommended Products</h1>
+    <ul>
+        {% for product in products %}
+            <li>
+                <a href="{% url 'product_detail' product.id %}">{{ product.title }}</a>
+                <p>{{ product.price }}</p>
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" width="100">
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

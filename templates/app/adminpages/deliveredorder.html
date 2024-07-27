@@ -3,10 +3,19 @@
 {% block title %}Delivered Product{% endblock %}
 
 {% block content %}
+<style>
+    .thumbnail {
+      border-radius: 1rem;
+    }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+  </style>
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h3 style="color: white; text-align: center; background-color: #3a4ad9; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Delivered Orders</h3>
+            <h3 style="color: white; text-align: center; background-color: #343a40; margin-top: 2rem; margin-bottom: 2rem; font-size: 1.25rem; font-weight: 350px; padding-block: 0.5rem;">Delivered Orders</h3>
             <table class="table">
                 <thead>
                     <tr>

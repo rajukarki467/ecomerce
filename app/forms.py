@@ -4,30 +4,32 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext ,gettext_lazy as _
 from django.contrib.auth import password_validation
 from pydantic import ValidationError, validate_email
-from .models import Customer, Product,Seller
+from .models import CITY_CHOICE, STATE_CHOICE, Customer, Product,Seller
 
 
 
 class CustomerRegistrationForm(UserCreationForm):
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    password2 = forms.CharField(label='Confirm Password (again)', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    email = forms.CharField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
-    phone = forms.CharField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control'}))
-    image = forms.ImageField( widget=forms.FileInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    phone = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    image = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    locality = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    city = forms.ChoiceField(choices=CITY_CHOICE, widget=forms.Select(attrs={'class': 'form-control'}))
+    state = forms.ChoiceField(choices=STATE_CHOICE, widget=forms.Select(attrs={'class': 'form-control'}))
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
-        labels = {'email': 'Email'}
-        widgets = {'username': forms.TextInput(attrs={'class': 'form-control'})}
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
+        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
-        user.phone = self.cleaned_data['phone']  # Custom field, may need extra handling
         if commit:
             user.save()
-            self.save_m2m()
         return user
 
 class LoginForm(AuthenticationForm):
@@ -56,9 +58,8 @@ class MySetPasswordForm(SetPasswordForm):
 class CustomerProfileForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ['name', 'locality', 'city', 'state', 'phone', 'image']
+        fields = ['locality', 'city', 'state', 'phone', 'image']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
             'locality': forms.TextInput(attrs={'class': 'form-control'}),
             'city': forms.Select(attrs={'class': 'form-control'}),
             'state': forms.Select(attrs={'class': 'form-control'}),
